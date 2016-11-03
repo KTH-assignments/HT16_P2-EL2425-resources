@@ -1,0 +1,83 @@
+\documentclass[a4paper,12pt,oneside,onecolumn]{article} % Document type
+
+\usepackage[left=1.0in, right=1.0in, top=1.0in, bottom=1.0in]{geometry}
+
+\usepackage{fontspec}
+\setmainfont{cmr12}
+\usepackage{amsmath,amssymb}
+\usepackage{xltxtra}
+\defaultfontfeatures{Ligatures=TeX}
+\usepackage[english, swedish]{babel}
+\usepackage[square,numbers]{natbib}
+\bibliographystyle{plainnat}
+\usepackage{float}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{lscape}
+\usepackage{graphicx}
+\usepackage{pstricks}
+\usepackage{subfigure}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{rotating}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{titling}
+\usepackage{lscape}
+\usepackage{tabularx}
+\pagestyle{fancy}
+\lhead{Slip Control}
+\rhead{EL2425}
+\chead{Project Plan}
+\rfoot{Page \thepage\ of \pageref{LastPage}}
+\cfoot{}
+\renewcommand{\footrulewidth}{0.4pt}
+
+
+\pretitle{%
+  \begin{center}
+  \LARGE
+  \includegraphics[scale=0.3]{./images/KTH_Logotyp_RGB_2013.eps}\\[\bigskipamount]
+}
+\posttitle{\end{center}}
+
+\title{
+	\vspace{1in}
+  EL$2425\ -$ Automatic Control, Project Course \\
+  \vspace{0.2in}
+  Slip Control
+}
+%\date{}
+
+\begin{document}
+
+	\maketitle
+
+  \vfill
+
+  \begin{center}
+
+    \large Document No.1 $-$ Project Plan, v1.0
+    \vfill
+    Alexandros Filotheou, Melih Guldogus, Tengfan Lin,\\ Roberto Sanchez-Rey, Xuechun Xu
+  \end{center}
+
+  \newpage
+
+  \section{Background}
+    \input{./sections/01.background.tex}
+
+  \section{Goals}
+    \input{./sections/02.goals.tex}
+
+  \section{Organization}
+    \input{./sections/03.organization.tex}
+
+  \section{Project Model}
+    \input{./sections/04.project_model.tex}
+
+  \section{Working Method}
+    \input{./sections/05.working_method.tex}
+
+\end{document}
