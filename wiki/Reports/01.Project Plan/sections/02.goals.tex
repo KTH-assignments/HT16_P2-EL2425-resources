@@ -8,10 +8,15 @@ reports respectively.
 From technical point of view, there are four goals throughout this project:
 
 \begin{itemize}
-  \item Driving the car via tele-operation
-  \item Achieving to drive the car to the centerline of a lane and maintaining that trajectory
-  \item Driving the car in a circular trajectory as fast as possible
-  \item Controlling slip at high speeds
+  \item Driving the car via tele-operation.
+  \item Determining the kinematic model of the car.
+  \item Achieving to drive the car to the centerline of a lane and maintaining that trajectory.
+    This will be accomplished by means of PID and MPC controllers.
+  \item Driving the car in a circular trajectory as fast as possible.
+    This will be tried by means of PID and MPC controllers.
+  \item Determining the dynamic model of the car.
+  \item Controlling slip at high speeds via predictive control. The premise is
+    driving as fast as possible, under high slip, within a closed circuit.
 \end{itemize}
 
 The details about achieving these goals are given in section \ref{04} as milestones
