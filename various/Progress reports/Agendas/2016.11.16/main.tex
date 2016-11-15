@@ -11,6 +11,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{float}
 \usepackage{url}
+\usepackage{pstricks}
 
 \widowpenalty=1000
 \clubpenalty=1000
@@ -33,8 +34,12 @@
   \item Time constant for velocity found, although significant differences
     between time constants have been found for different velocity references.
   \item ROS infrastructure set.
-  \item MPC python package found: \texttt{cvxopt}. It seems to capture the
-    essence of what our goal is. See \url{http://nbviewer.jupyter.org/github/cvxgrp/cvx_short_course/blob/master/intro/control.ipynb}
+  \item MPC python package found: \texttt{cvxopt}. It seems to be able to
+    capture the essence of what our goal is.
+    See \url{http://nbviewer.jupyter.org/github/cvxgrp/cvx_short_course/blob/master/intro/control.ipynb}
+  \item Theoretical solution involving MPC and traveling on the circumference
+    of a circle found.
+
 \end{itemize}
 
 
@@ -71,11 +76,20 @@
       \phi = \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
     \end{align}
 
+    since $\mu + \phi + \dfrac{\pi}{2} = \pi$ and $tan(\mu) = \dfrac{CF}{CR}$.
+
     In other words, at time $t$ the vehicle should have a heading angle of
 
     \begin{align}
-      \psi_0 = \psi_c + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+      \psi_o = \psi_c + \phi = \psi_c + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
     \end{align}
+
+
+    \begin{figure}[H]
+      \scalebox{1}{\input{./figures/rotation.tex}}
+      \caption{}
+      \label{}
+    \end{figure}
 
     Hence we can formulate the optimization problem as
 
