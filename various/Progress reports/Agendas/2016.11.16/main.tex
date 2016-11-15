@@ -1,0 +1,101 @@
+\documentclass[oneside,12pt]{article}
+\usepackage{fontspec}
+\usepackage{lmodern}
+%\setmainfont{cmr12}
+\defaultfontfeatures{Ligatures=TeX} % To support LaTeX quoting style
+\usepackage{amsmath}
+\usepackage{lscape}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{subcaption}
+\usepackage[margin=1in]{geometry}
+\usepackage{float}
+\usepackage{url}
+
+\widowpenalty=1000
+\clubpenalty=1000
+
+
+\title{EL2425 - Slip Control - Meeting agenda 2016-11-16}
+%\date{}
+
+\begin{document}
+\maketitle
+
+\section{Done}
+
+\begin{itemize}
+  \item Microcontroller messaging. Teensy was flushed with new firmware that
+    allows only messages of type \texttt{slip\_control\_communications/input\_drive}
+    to be passed to it. (Previously, a message type of \texttt{f1tenth\_msgs/drive\_values}
+    was hardcoded into Arduino's firmware, making communication within package
+    \texttt{slip\_control} impossible.)
+  \item Time constant for velocity found, although significant differences
+    between time constants have been found for different velocity references.
+  \item ROS infrastructure set.
+  \item MPC python package found: \texttt{cvxopt}. It seems to capture the
+    essence of what our goal is. See \url{http://nbviewer.jupyter.org/github/cvxgrp/cvx_short_course/blob/master/intro/control.ipynb}
+\end{itemize}
+
+
+
+\section{Ongoing}
+
+\begin{itemize}
+  \item Theoretical solution involving MPC and traveling in the middle of two
+    walls found. The problem can be decomposed into two separate and independent
+    components involving a translation and a rotation of the vehicle. Given the
+    pose of the vehicle at time $t$ as $(x_c, y_c, v_c, \psi_v)$, two range
+    scans at $-90^\circ$ and $+90^\circ$ with respect to the longitudinal axis of
+    the vehicle which are denoted as $CL$ and $CR$ respectively, the error in
+    translational terms is
+
+    \begin{align}
+      e_x &= \dfrac{CR-CL}{2}sin\psi \\
+      e_y &= \dfrac{LC-CR}{2}cos\psi
+    \end{align}
+
+    In other words, at time $t$ the vehicle should have been at point
+
+    \begin{align}
+      x_o &=x_c + \dfrac{CR-CL}{2}sin\psi \\
+      y_o &=y_c + \dfrac{LC-CR}{2}cos\psi
+    \end{align}
+
+    With regard to rotation, given the pose of the vehicle at time $t$ as
+    $(x_c, y_c, v_c, \psi_v)$, three range scans at $-90^\circ$, $0^\circ$ and
+    $+90^\circ$ with respect to the longitudinal axis of the vehicle which are
+    denoted as $CL$, $CF$ and $CR$ respectively, the heading angle error is
+
+    \begin{align}
+      \phi = \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+    \end{align}
+
+    In other words, at time $t$ the vehicle should have a heading angle of
+
+    \begin{align}
+      \psi_0 = \psi + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+    \end{align}
+
+\end{itemize}
+
+
+
+\section{Issues}
+
+\begin{itemize}
+  \item The ethernet adapter for the lidar is broken and needs to be replaced.
+    This means that packages \texttt{circular\_mpc} and \texttt{centerline\_mpc}
+    cannot be tested until communication with the lidar is fixed.
+  \item The SML lab is booked for the week 14/11-18/11 (What about the weekend?),
+    hence no MOCAP. This means that packages \texttt{circular\_pid} and
+    \texttt{centerline\_pid}(gains need adjusting) cannot be tested until at
+    least Saturday 19/11.
+  \item Package \texttt{circular\_pid}, which was to be working out-of-the-box,
+    does not work. The fault lies somewhere inside ROS: it appears that when
+    ROS\_MASTER runs outside Jetson, sometimes communication between Jetson and the
+    nodes running outside it is not established. When it is established, no
+    messages are getting through to teensy.
+\end{itemize}
+
+\end{document}
