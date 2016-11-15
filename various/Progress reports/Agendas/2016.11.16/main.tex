@@ -17,7 +17,7 @@
 \clubpenalty=1000
 
 
-\title{EL2425 - Slip Control - Meeting agenda 2016-11-16}
+\title{EL2425 - Slip Control \\ Meeting agenda 2016-11-16}
 %\date{}
 
 \begin{document}
@@ -26,19 +26,23 @@
 \section{Done}
 
 \begin{itemize}
-  \item Microcontroller messaging. Teensy was flushed with new firmware that
+  \item \textbf{Microcontroller messaging}. Teensy was flushed with new firmware that
     allows only messages of type \texttt{slip\_control\_communications/input\_drive}
     to be passed to it. (Previously, a message type of \texttt{f1tenth\_msgs/drive\_values}
     was hardcoded into Arduino's firmware, making communication within package
     \texttt{slip\_control} impossible due to incompatibility.)
-  \item Time constant for velocity found, although significant differences
-    between time constants have been found for different velocity references.
-  \item ROS infrastructure set.
-  \item MPC python package found: \texttt{cvxopt}. It seems to be able to
+  \item \textbf{Time constant} pertaining to the velocity response of the vehicle
+    found, although significant differences between time constants have been
+    found for different velocity references.
+  \item \textbf{ROS infrastructure} set.
+  \item \textbf{MPC python package} found: \texttt{cvxopt}. It seems to be able to
     capture the essence of what our goal is.
     See \url{http://nbviewer.jupyter.org/github/cvxgrp/cvx_short_course/blob/master/intro/control.ipynb}
-  \item Theoretical solution involving MPC and traveling on the circumference
-    of a circle found.
+  \item Theoretical solution involving PID and traveling on the circumference
+    of a circle found, and code for it written. However, the involved gains
+    have to be tuned experimentally.
+  \item Theoretical solution involving MPC and tracking the centerline of a lane
+    circle found, however code for it has not been written yet.
 
 \end{itemize}
 
@@ -47,16 +51,19 @@
 \section{Ongoing}
 
 \begin{itemize}
-  \item Theoretical solution involving MPC and traveling in the middle of two
-    walls found. The problem can be decomposed into two separate and independent
-    components involving a translation and a rotation of the vehicle. Given the
-    pose of the vehicle at time $t$ as $(x_c, y_c, v_c, \psi_v)$ and two range
-    scans at $-90^\circ$ and $+90^\circ$ with respect to the longitudinal axis of
-    the vehicle which are denoted as $CL$ and $CR$ respectively, the error in
-    translational terms is
+  \item Theoretical solution involving MPC and tracking the centerline of a lane.
+
+    The problem can be decomposed into two separate and independent
+    components involving a translation and a rotation of the vehicle.
+
+
+    \textbf{Translational component} Given the pose of the vehicle at time $t$
+    as $(x_c, y_c, v_c, \psi_v)$ and two range scans at $-90^\circ$ and
+    $+90^\circ$ with respect to the longitudinal axis of the vehicle which are
+    denoted as $CL$ and $CR$ respectively, the error in translational terms is
 
     \begin{align}
-      e_x &= \dfrac{CR-CL}{2}\text{sin}\psi \\
+      e_x &= -\dfrac{CL-CR}{2}\text{sin}\psi \\
       e_y &= \dfrac{CL-CR}{2}\text{cos}\psi
     \end{align}
 
@@ -77,7 +84,7 @@
     In other words, at time $t$ the vehicle should have been at point $O(x_o, y_o)$:
 
     \begin{align}
-      x_o &=x_c + \dfrac{CR-CL}{2}\text{sin}\psi \\
+      x_o &=x_c - \dfrac{CL-CR}{2}\text{sin}\psi \\
       y_o &=y_c + \dfrac{CL-CR}{2}\text{cos}\psi
     \end{align}
 
@@ -93,10 +100,11 @@
       \label{}
     \end{figure}
 
-    With regard to rotation, given the pose of the vehicle at time $t$ as
-    $(x_c, y_c, v_c, \psi_v)$ and three range scans at $-90^\circ$, $0^\circ$ and
-    $+90^\circ$ with respect to the longitudinal axis of the vehicle which are
-    denoted as $CL$, $CF$ and $CR$ respectively, the heading angle error is
+    \textbf{Rotational component} With regard to rotation, given the pose of
+    the vehicle at time $t$ as $(x_c, y_c, v_c, \psi_v)$ and three range scans
+    at $-90^\circ$, $0^\circ$ and $+90^\circ$ with respect to the longitudinal
+    axis of the vehicle which are denoted as $CL$, $CF$ and $CR$ respectively,
+    the heading angle error is
 
     \begin{align}
       \phi = \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
@@ -120,12 +128,13 @@
     Hence we can formulate the optimization problem as
 
     \begin{align}
-      min &\sum\limits_{k=0}^{k=N} (X-X_o)^T Q (X-X_o) + U^T R U \\
+      min &\sum\limits_{k=0}^N (X-X_o)^T Q (X-X_o) + U^T R U \\
       \text{subject to } & X[t+1] = A X[t] + B U[t] \\
       & -U_{min} \leq U \leq U_{max}
     \end{align}
 
-    where $X=[x_c, y_c, v_c, \psi_c]^T$ and $X_o = [x_o, y_o, v_o, \psi_o]^T$.
+    where $X=[x_c, y_c, v_c, \psi_c]^T$, $X_o = [x_o, y_o, v_o, \psi_o]^T$,
+    $N$ is the horizon and $U=[v, \delta]^T$ is the input vector.
     Positive definite matrices $Q,R$ will have to be adjusted experimentally.
 
     However, the vehicle's velocity is not measurable since the vehicle does not
@@ -145,14 +154,36 @@
     This means that packages \texttt{circular\_mpc} and \texttt{centerline\_mpc}
     cannot be tested until communication with the lidar is fixed.
   \item The SML lab is booked for the week 14/11-18/11 (what about the weekend?),
-    hence no MOCAP. This means that packages \texttt{circular\_pid} and
-    \texttt{centerline\_pid} (gains need adjusting) cannot be tested until at
-    least Saturday 19/11.
+    hence there is no access to MOCAP. This means that packages
+    \texttt{circular\_pid} and \texttt{centerline\_pid} (gains need adjusting)
+    cannot be tested until at least Saturday 19/11.
   \item Package \texttt{circular\_pid}, which was to be working out-of-the-box,
-    does not work. The fault lies somewhere inside ROS: it appears that when
+    does not work. The fault lies somewhere within ROS: it appears that when
     ROS\_MASTER runs outside Jetson, sometimes communication between Jetson and the
     nodes running outside it is not established. When it is established, no
     messages are getting through to teensy.
 \end{itemize}
+
+
+\section{To do}
+
+\begin{itemize}
+  \item Tune gains of the PID concerning package \texttt{centerline\_pid}.
+  \item Implement \texttt{centerline\_mpc}.
+  \item Implement \texttt{circular\_pid}.
+  \item A node that handles the linearization of the kinematic model of the
+    vehicle has to be written in ROS.
+\end{itemize}
+
+\section{Misc.}
+
+The progress of the project can be observed in \texttt{trello} and \texttt{github}:
+
+\begin{itemize}
+  \item \url{https://trello.com/b/uEP0jl0B/slip-control}
+  \item \url{https://gits-15.sys.kth.se/alefil/HT16_P2_EL2425}
+  \item \url{https://gits-15.sys.kth.se/alefil/HT16_P2_EL2425_resources}
+\end{itemize}
+
 
 \end{document}
