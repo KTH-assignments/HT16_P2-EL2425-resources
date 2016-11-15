@@ -265,6 +265,10 @@
   \item Implement \texttt{circular\_mpc}.
   \item A node that handles the linearization of the kinematic model of the
     vehicle has to be written in ROS.
+  \item Construct a Kalman filter to estimate the velocity of the vehicle.
+    Even in the case where we had encoders, in the case of high slip, an
+    encoder is irrelevant. For instance, think about the case where the
+    surface that the vehicle's wheels touch is ice.
 \end{itemize}
 
 \section{Misc.}
