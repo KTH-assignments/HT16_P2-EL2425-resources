@@ -29,7 +29,7 @@
     allows only messages of type \texttt{slip\_control\_communications/input\_drive}
     to be passed to it. (Previously, a message type of \texttt{f1tenth\_msgs/drive\_values}
     was hardcoded into Arduino's firmware, making communication within package
-    \texttt{slip\_control} impossible.)
+    \texttt{slip\_control} impossible due to incompatibility.)
   \item Time constant for velocity found, although significant differences
     between time constants have been found for different velocity references.
   \item ROS infrastructure set.
@@ -45,7 +45,7 @@
   \item Theoretical solution involving MPC and traveling in the middle of two
     walls found. The problem can be decomposed into two separate and independent
     components involving a translation and a rotation of the vehicle. Given the
-    pose of the vehicle at time $t$ as $(x_c, y_c, v_c, \psi_v)$, two range
+    pose of the vehicle at time $t$ as $(x_c, y_c, v_c, \psi_v)$ and two range
     scans at $-90^\circ$ and $+90^\circ$ with respect to the longitudinal axis of
     the vehicle which are denoted as $CL$ and $CR$ respectively, the error in
     translational terms is
@@ -63,7 +63,7 @@
     \end{align}
 
     With regard to rotation, given the pose of the vehicle at time $t$ as
-    $(x_c, y_c, v_c, \psi_v)$, three range scans at $-90^\circ$, $0^\circ$ and
+    $(x_c, y_c, v_c, \psi_v)$ and three range scans at $-90^\circ$, $0^\circ$ and
     $+90^\circ$ with respect to the longitudinal axis of the vehicle which are
     denoted as $CL$, $CF$ and $CR$ respectively, the heading angle error is
 
@@ -74,9 +74,26 @@
     In other words, at time $t$ the vehicle should have a heading angle of
 
     \begin{align}
-      \psi_0 = \psi + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+      \psi_0 = \psi_c + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
     \end{align}
 
+    Hence we can formulate the optimization problem as
+
+    \begin{align}
+      min &\sum\limits_{k=0}^{k=N} (X-X_o)^T Q (X-X_o) + U^T R U \\
+      \text{subject to } & X[t+1] = A X[t] + B U[t] \\
+      & -U_{min} \leq U \leq U_{max}
+    \end{align}
+
+    where $X=[x_c, y_c, v_c, \psi_c]^T$ and $X_o = [x_o, y_o, v_o, \psi_o]^T$.
+    Positive definite matrices $Q,R$ will have to be adjusted experimentally.
+
+    However, the vehicle's velocity is not measurable since the vehicle does not
+    have encoders connected to its wheels and MOCAP or range scans cannot
+    provide measurements of velocity. Either a Kalman filter will have to be
+    employed in order to estimate the vehicle's velocity, or the ESC feature of
+    the vehicle will have to be investigated with regard to its ability to
+    ensure that the input velocity is indeed the vehicle's velocity.
 \end{itemize}
 
 
@@ -87,9 +104,9 @@
   \item The ethernet adapter for the lidar is broken and needs to be replaced.
     This means that packages \texttt{circular\_mpc} and \texttt{centerline\_mpc}
     cannot be tested until communication with the lidar is fixed.
-  \item The SML lab is booked for the week 14/11-18/11 (What about the weekend?),
+  \item The SML lab is booked for the week 14/11-18/11 (what about the weekend?),
     hence no MOCAP. This means that packages \texttt{circular\_pid} and
-    \texttt{centerline\_pid}(gains need adjusting) cannot be tested until at
+    \texttt{centerline\_pid} (gains need adjusting) cannot be tested until at
     least Saturday 19/11.
   \item Package \texttt{circular\_pid}, which was to be working out-of-the-box,
     does not work. The fault lies somewhere inside ROS: it appears that when
