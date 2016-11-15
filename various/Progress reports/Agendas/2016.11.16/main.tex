@@ -11,6 +11,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{float}
 \usepackage{url}
+\usepackage[hidelinks]{hyperref}
 \usepackage{pstricks}
 
 \widowpenalty=1000
@@ -57,18 +58,97 @@
 
 \section{Ongoing}
 
-\begin{itemize}
-  \item \textbf{Theoretical solution involving PID and tracking the centerline of a lane}
+  \subsection{Theoretical solution involving PID and tracking the centerline of a lane}
 
-  \item \textbf{Theoretical solution involving MPC and tracking the centerline of a lane}
+    The problem can be decomposed into two separate and independent
+    components involving a translation and a rotation of the vehicle.
+
+
+    \textbf{Translational component}
+    We assume that the pose of the vehicle at time $t$ is
+    $(x_c, y_c, v_c, \psi_v)$ and that two range scans at $+90^\circ$ and
+    $-90^\circ$ with respect to the longitudinal axis of the
+    vehicle are available, which are denoted as $CL$ and $CR$ respectively. Also,
+    in figure \ref{fig:centerline_pid_translation}, point $O'$ is a future
+    reference and the angle $\lambda$ is the angle that the vehicle should
+    make in order to reach $O'$ in a future moment.
+
+    Then, since $CL + CR = L = OL + OR$ and $CL = OC + OL$, this means that
+
+    \begin{equation}
+      OC = OR - CR = \dfrac{L}{2} - CR = \dfrac{CL + CR}{2} - CR = \dfrac{CL-CR}{2}
+    \end{equation}
+    where $L$ is the width of the lane whose centerline the vehicle is to track.
+
+    Furthermore, in the $CC'O'$ triangle
+
+    \begin{align}
+      tan\lambda &= \dfrac{O'C'}{CC'} = \dfrac{OC}{CC'} = \dfrac{CL-CR}{2CC'} \\
+      \lambda &= tan^{-1}\dfrac{CL-CR}{2CC'}
+    \end{align}
+
+
+    \begin{figure}[H]\centering
+      \scalebox{1}{\input{./figures/centerline_pid_translation.tex}}
+      \caption{The vehicle's heading angle is equal to that of the lane's.
+        However, its position is off track.}
+      \label{fig:centerline_pid_translation}
+    \end{figure}
+
+    \textbf{Rotational component}
+
+
+    We assume that the the pose of the vehicle at time $t$ as
+    $(x_c, y_c, v_c, \psi_v)$ and that three range scans
+    at $+90^\circ$, $0^\circ$ and $-90^\circ$ with respect to the
+    longitudinal axis of the vehicle are available, which are denoted as
+    $CL$, $CF$ and $CR$ respectively. Then, the heading angle error is
+
+    \begin{align}
+      \phi = \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+    \end{align}
+
+    since $\mu + \phi + \dfrac{\pi}{2} = \pi$ and $tan(\mu) = \dfrac{CF}{CR}$.
+
+    \begin{figure}[H]\centering
+      \scalebox{1}{\input{./figures/centerline_mpc_rotation.tex}}
+      \caption{The vehicle's position and its reference are equal. However,
+        the vehicle's heading is off track.}
+      \label{}
+    \end{figure}
+
+    The overall angle error of the vehicle is then
+
+    \begin{align}
+      e &= tan^{-1}\dfrac{CL-CR}{2CC'} + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+    \end{align}
+
+    Here, the length $CC'$ is unknown and can be set beforehand. Its magnitude
+    will determine the vehicle's rate of convergence to the centerline of the
+    lane.
+
+    Since the input to the plant is in terms of angular displacement, this
+    is in fact the error that the PID controller can include and utilize in
+    order to determine the plant's input.
+
+    The angular input to the vehicle will then be
+
+    \begin{align}
+      \delta = K_p \cdot e + K_d \cdot \dfrac{de}{dt} + K_i \cdot \int e dt
+    \end{align}
+
+
+
+
+  \subsection{Theoretical solution involving MPC and tracking the centerline of a lane}
 
     The problem can be decomposed into two separate and independent
     components involving a translation and a rotation of the vehicle.
 
 
     \textbf{Translational component} Given the pose of the vehicle at time $t$
-    as $(x_c, y_c, v_c, \psi_v)$ and two range scans at $-90^\circ$ and
-    $+90^\circ$ with respect to the longitudinal axis of the vehicle which are
+    as $(x_c, y_c, v_c, \psi_v)$ and two range scans at $+90^\circ$ and
+    $-90^\circ$ with respect to the longitudinal axis of the vehicle which are
     denoted as $CL$ and $CR$ respectively, the error in translational terms is
 
     \begin{align}
@@ -98,20 +178,21 @@
     \end{align}
 
     \begin{figure}[H]\centering
-      \scalebox{1}{\input{./figures/translation.tex}}
-      \caption{}
+      \scalebox{1}{\input{./figures/centerline_mpc_translation.tex}}
+      \caption{The vehicle's heading angle is equal to that of the lane's.
+        However, its position is off track.}
       \label{}
     \end{figure}
 
     \begin{figure}[H]\centering
-      \scalebox{1}{\input{./figures/translation_aux.tex}}
+      \scalebox{1}{\input{./figures/centerline_mpc_translation_aux.tex}}
       \caption{}
       \label{}
     \end{figure}
 
     \textbf{Rotational component} With regard to rotation, given the pose of
     the vehicle at time $t$ as $(x_c, y_c, v_c, \psi_v)$ and three range scans
-    at $-90^\circ$, $0^\circ$ and $+90^\circ$ with respect to the longitudinal
+    at $+90^\circ$, $0^\circ$ and $-90^\circ$ with respect to the longitudinal
     axis of the vehicle which are denoted as $CL$, $CF$ and $CR$ respectively,
     the heading angle error is
 
@@ -129,8 +210,9 @@
 
 
     \begin{figure}[H]\centering
-      \scalebox{1}{\input{./figures/rotation.tex}}
-      \caption{}
+      \scalebox{1}{\input{./figures/centerline_mpc_rotation.tex}}
+      \caption{The vehicle's position and its reference are equal. However,
+        the vehicle's heading is off track.}
       \label{}
     \end{figure}
 
@@ -152,7 +234,6 @@
     employed in order to estimate the vehicle's velocity, or the ESC feature of
     the vehicle will have to be investigated with regard to its ability to
     ensure that the input velocity is indeed the vehicle's velocity.
-\end{itemize}
 
 
 
@@ -177,9 +258,11 @@
 \section{To do}
 
 \begin{itemize}
+  \item Consult with Mohamed about the newly formed solution to the
+    \texttt{centerline\_pid} problem. If correct, include it in the code.
   \item Tune gains of the PID concerning package \texttt{centerline\_pid}.
   \item Implement \texttt{centerline\_mpc}.
-  \item Implement \texttt{circular\_pid}.
+  \item Implement \texttt{circular\_mpc}.
   \item A node that handles the linearization of the kinematic model of the
     vehicle has to be written in ROS.
 \end{itemize}
