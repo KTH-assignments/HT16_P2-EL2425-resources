@@ -269,6 +269,16 @@
     Even in the case where we had encoders, in the case of high slip, an
     encoder is irrelevant. For instance, think about the case where the
     surface that the vehicle's wheels touch is ice.
+
+    However, the incorporation of a Kalman filter for estimating a state
+    presupposes that this state \textit{is being measured}, however large its
+    uncertainty might be. In our case the velocity is not being measured at all.
+    Or is our input velocity considered to be a measurement of the vehicle's
+    velocity?
+
+    Can measuring displacements in $x,y$ from MOCAP and then deducing
+    the vector of the vehicle's velocity be considered as velocity measurements?
+
 \end{itemize}
 
 \section{Misc.}
