@@ -56,16 +56,42 @@
     translational terms is
 
     \begin{align}
-      e_x &= \dfrac{CR-CL}{2}sin\psi \\
-      e_y &= \dfrac{LC-CR}{2}cos\psi
+      e_x &= \dfrac{CR-CL}{2}\text{sin}\psi \\
+      e_y &= \dfrac{CL-CR}{2}\text{cos}\psi
     \end{align}
 
-    In other words, at time $t$ the vehicle should have been at point
+    since $CL + CR = L = OL + OR$, and $CL = OC + OL$, which means that
+
+    \begin{equation}
+      OC = OR - CR = \dfrac{L}{2} - CR = \dfrac{CL + CR}{2} - CR = \dfrac{CL-CR}{2}
+    \end{equation}
+    where $L$ is the width of the lane whose centerline the vehicle is to track.
+
+    Furthermore, in the $COM$ triangle:
 
     \begin{align}
-      x_o &=x_c + \dfrac{CR-CL}{2}sin\psi \\
-      y_o &=y_c + \dfrac{LC-CR}{2}cos\psi
+      O'C &= OC \text{cos}\mu = OC \text{cos}(\dfrac{\pi}{2} - \psi) = OC \text{sin}\psi = \dfrac{CL-CR}{2} \text{sin}\psi\\
+      O'O &= OC \text{sin}\mu = OC \text{sin}(\dfrac{\pi}{2} - \psi) = OC \text{cos}\psi = \dfrac{CL-CR}{2} \text{cos}\psi
     \end{align}
+
+    In other words, at time $t$ the vehicle should have been at point $O(x_o, y_o)$:
+
+    \begin{align}
+      x_o &=x_c + \dfrac{CR-CL}{2}\text{sin}\psi \\
+      y_o &=y_c + \dfrac{CL-CR}{2}\text{cos}\psi
+    \end{align}
+
+    \begin{figure}[H]\centering
+      \scalebox{1}{\input{./figures/translation.tex}}
+      \caption{}
+      \label{}
+    \end{figure}
+
+    \begin{figure}[H]\centering
+      \scalebox{1}{\input{./figures/translation_aux.tex}}
+      \caption{}
+      \label{}
+    \end{figure}
 
     With regard to rotation, given the pose of the vehicle at time $t$ as
     $(x_c, y_c, v_c, \psi_v)$ and three range scans at $-90^\circ$, $0^\circ$ and
@@ -85,7 +111,7 @@
     \end{align}
 
 
-    \begin{figure}[H]
+    \begin{figure}[H]\centering
       \scalebox{1}{\input{./figures/rotation.tex}}
       \caption{}
       \label{}
