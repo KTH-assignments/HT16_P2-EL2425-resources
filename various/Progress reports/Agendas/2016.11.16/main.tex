@@ -26,23 +26,30 @@
 \section{Done}
 
 \begin{itemize}
-  \item \textbf{Microcontroller messaging}. Teensy was flushed with new firmware that
-    allows only messages of type \texttt{slip\_control\_communications/input\_drive}
-    to be passed to it. (Previously, a message type of \texttt{f1tenth\_msgs/drive\_values}
+
+  \item \textbf{Microcontroller messaging}. Teensy was eventually flushed with
+    new firmware that allows only messages of type
+    \texttt{slip\_control\_communications/input\_drive} to be passed to it.
+    (Previously, a message type of \texttt{f1tenth\_msgs/drive\_values}
     was hardcoded into Arduino's firmware, making communication within package
     \texttt{slip\_control} impossible due to incompatibility.)
+
   \item \textbf{Time constant} pertaining to the velocity response of the vehicle
-    found, although significant differences between time constants have been
-    found for different velocity references.
+    found, although significant differences between time constants
+    for different velocity references have been found.
+
   \item \textbf{ROS infrastructure} set.
+
   \item \textbf{MPC python package} found: \texttt{cvxopt}. It seems to be able to
     capture the essence of what our goal is.
     See \url{http://nbviewer.jupyter.org/github/cvxgrp/cvx_short_course/blob/master/intro/control.ipynb}
-  \item Theoretical solution involving PID and traveling on the circumference
-    of a circle found, and code for it written. However, the involved gains
+
+  \item Theoretical solution involving PID and traveling on the centerline of a
+    lane found, and code for it written. However, the involved gains
     have to be tuned experimentally.
+
   \item Theoretical solution involving MPC and tracking the centerline of a lane
-    circle found, however code for it has not been written yet.
+    found, however code for it has not been written yet.
 
 \end{itemize}
 
@@ -51,7 +58,9 @@
 \section{Ongoing}
 
 \begin{itemize}
-  \item Theoretical solution involving MPC and tracking the centerline of a lane.
+  \item \textbf{Theoretical solution involving PID and tracking the centerline of a lane}
+
+  \item \textbf{Theoretical solution involving MPC and tracking the centerline of a lane}
 
     The problem can be decomposed into two separate and independent
     components involving a translation and a rotation of the vehicle.
