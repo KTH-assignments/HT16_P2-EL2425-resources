@@ -1,0 +1,231 @@
+\documentclass[oneside,12pt]{article}
+\usepackage{fontspec}
+\usepackage{lmodern}
+%\setmainfont{cmr12}
+\defaultfontfeatures{Ligatures=TeX} % To support LaTeX quoting style
+\usepackage{amsmath}
+\usepackage{lscape}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{subcaption}
+\usepackage[margin=1in]{geometry}
+\usepackage{float}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{pstricks}
+\usepackage{steinmetz}
+
+\widowpenalty=1000
+\clubpenalty=1000
+
+
+\title{EL2425 - Slip Control \\ Meeting agenda 2016-11-16}
+%\date{}
+
+\begin{document}
+\maketitle
+
+\section{Done}
+
+%\begin{itemize}
+%\end{itemize}
+
+
+
+\section{Ongoing}
+
+  \subsection{Theoretical solution involving MPC and tracking the centerline of a lane}
+
+
+    In figure \ref{fig:centerline_mpc}, the $x$ axis is fixed on the lane's
+    centerline, while axis $y$ is perpendicular to it. The origin is at point
+    $O$. The vehicle is represented by point $C$. The orientation of the vehicle
+    with respect to the lane (the $x$-axis) is $\phi$. Given this configuration
+    and three scans, at $-90^{\circ}$, $0^{\circ}$ and $90^{\circ}$ with
+    respect to the longitudinal axis of the vehicle, denoted by $CR$, $CF$ and
+    $CL$ respectively, the objective is to find the distance $OC$ and the angle
+    $\phi$ so that a MPC optimization problem can be solved with $OC$ and $\phi$
+    acting as initial conditions. The velocity of the vehicle,
+    which is constant, and its displacement along the $x$-axis are at this point
+    irrelevant to the optimization problem given this configuration. The only
+    source of information is the lidar itself and nothing else.
+
+    \begin{figure}[H]\centering
+      \scalebox{1}{\input{./figures/centerline_mpc.tex}}
+      \caption{}
+      \label{fig:centerline_mpc}
+    \end{figure}
+
+
+    \subsubsection{Initial conditions}
+
+    \textbf{Finding $\phi$}
+
+    We turn our attention to triangle LCF, where
+
+    \begin{align}
+      tan\phi &= \dfrac{CL}{CF} \Leftrightarrow \phi = tan^{-1} \dfrac{CL}{CF} \\
+    \end{align}
+
+
+    \textbf{Finding $OC$}
+
+    First we note that
+
+    \begin{align}
+      L_o O + OC + CR_o &= W = CR_o + CL_o
+    \end{align}
+
+    where $W$ is the width of the lane. But $L_o O = \dfrac{W}{2}$ hence
+
+    \begin{align}
+      OC + CR_o &= \dfrac{1}{2}(CR_o + CL_o) \Leftrightarrow \\
+      OC &= \dfrac{1}{2}(CL_o - CR_o)
+    \end{align}
+
+    But $CL_o = CL sin\lambda$ and $CR_o = CR cos\phi$, hence
+
+
+    \begin{align}
+      OC &= \dfrac{1}{2}(CL sin\lambda - CR cos\phi)
+    \end{align}
+
+    From triangle LCF we note that $\phi + \lambda + \dfrac{\pi}{2} = \pi$,
+    hence $\lambda = \dfrac{\pi}{2} - \phi$. Then, we conclude that
+
+    \begin{align}
+      OC &= \dfrac{1}{2}(CL - CR) cos\phi
+    \end{align}
+
+
+
+
+    \subsubsection{Obtaining the relevant linearized kinematic model}
+
+    The equations of the vehicle's motion that are relevant are
+
+    \begin{align}
+      \dot{y} &= v sin(\phi + \beta) \\
+      \dot{\phi} &= \dfrac{v}{l_r} sin\beta
+    \end{align}
+
+    Sampling with a sampling time of $T_s$ gives
+
+    \begin{align}
+      y[k+1] &= y[k] + T_s v sin(\phi + \beta) \\
+      \phi[k+1] &= \phi[k] + T_s \dfrac{v}{l_r} sin\beta
+    \end{align}
+
+    Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
+    $t=k$ around $\delta = 0$ (which makes $\beta = 0$) gives
+
+    \begin{equation}
+     A =
+      \begin{bmatrix}
+        1 & T_s v cos(\phi + \beta) \\\\
+        0 & 1
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+        1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k} + tan^{-1} (l_q tan\delta_k)\Big) \\
+        0 & 1
+      \end{bmatrix}
+    \end{equation}
+    \begin{equation}
+     A =
+      \begin{bmatrix}
+        1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+        0 & 1
+      \end{bmatrix}
+    \end{equation}
+
+    \begin{equation}
+     B =
+      \begin{bmatrix}
+        T_s v cos(\phi + \beta) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+        \dfrac{T_s v}{l_r} cos(\beta) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+        T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k} + tan^{-1} (l_q tan\delta_k)\Big) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+        \dfrac{T_s v}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_k\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+      \end{bmatrix}
+    \end{equation}
+    \begin{equation}
+     B =
+      \begin{bmatrix}
+        \dfrac{T_s l_r v}{l_r + l_f} cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+        \dfrac{T_s v}{l_r+l_f}
+      \end{bmatrix}
+    \end{equation}
+
+    where $l_q = \dfrac{l_r}{l_r + l_f}$
+
+
+
+
+  Now we can express the linear model as
+
+    \begin{equation}
+      \begin{bmatrix}
+        y_{k+1} \\
+        \phi_{k+1}
+      \end{bmatrix}
+      =
+       A
+      \begin{bmatrix}
+        y_{k} \\
+        \phi_{k}
+      \end{bmatrix}
+      +
+      B
+      \delta_{k}\text{, or}
+    \end{equation}
+
+    \begin{equation}
+      \begin{bmatrix}
+        y_{k+1} \\
+        \phi_{k+1}
+      \end{bmatrix}
+      =
+      \begin{bmatrix}
+        1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+        0 & 1
+      \end{bmatrix}
+      \begin{bmatrix}
+        y_{k} \\
+        \phi_{k}
+      \end{bmatrix}
+      +
+      \begin{bmatrix}
+        \dfrac{T_s l_r v}{l_r + l_f} cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+        \dfrac{T_s v}{l_r+l_f}
+      \end{bmatrix}
+      \delta_{k}
+    \end{equation}
+
+
+
+\section{Issues}
+
+%\begin{itemize}
+%\end{itemize}
+
+
+\section{To do}
+
+%\begin{itemize}
+%\end{itemize}
+
+\section{Misc.}
+
+The progress of the project can be observed in \texttt{trello} and \texttt{github}:
+
+\begin{itemize}
+  \item \url{https://trello.com/b/uEP0jl0B/slip-control}
+  \item \url{https://gits-15.sys.kth.se/alefil/HT16_P2_EL2425}
+  \item \url{https://gits-15.sys.kth.se/alefil/HT16_P2_EL2425_resources}
+\end{itemize}
+
+
+\end{document}
