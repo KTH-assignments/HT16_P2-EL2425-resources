@@ -102,7 +102,9 @@
 
     \subsubsection{Obtaining the relevant linearized kinematic model}
 
-    The equations of the vehicle's motion that are relevant are
+    The model constitutes the equations of motion of the vehicle, and has two
+    states ($y$ and $\phi$) and one input ($\delta$). The equations of the
+    vehicle's motion that are relevant here are
 
     \begin{align}
       \dot{y} &= v sin(\phi + \beta) \\
@@ -112,9 +114,16 @@
     Sampling with a sampling time of $T_s$ gives
 
     \begin{align}
-      y[k+1] &= y[k] + T_s v sin(\phi + \beta) \\
-      \phi[k+1] &= \phi[k] + T_s \dfrac{v}{l_r} sin\beta
+      y_{k+1} &= y_{k} + T_s v sin(\phi_k + \beta_k) \\
+      \phi_{k+1} &= \phi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
     \end{align}
+
+    where
+
+    \begin{align}
+      \beta_k = tan^{-1}\Big(\dfrac{l_r}{l_r + l_f} tan\delta_k\Big)
+    \end{align}
+
 
     Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
     $t=k$ around $\delta = 0$ (which makes $\beta = 0$) gives
@@ -166,21 +175,21 @@
 
   Now we can express the linear model as
 
+    \begin{align}
+      s_{k+1} = A s_k + B \delta_k
+    \end{align}
+
+    where
+
     \begin{equation}
-      \begin{bmatrix}
-        y_{k+1} \\
-        \phi_{k+1}
-      \end{bmatrix}
-      =
-       A
+      s=
       \begin{bmatrix}
         y_{k} \\
         \phi_{k}
       \end{bmatrix}
-      +
-      B
-      \delta_{k}\text{, or}
     \end{equation}
+
+    or
 
     \begin{equation}
       \begin{bmatrix}
@@ -203,6 +212,16 @@
       \end{bmatrix}
       \delta_{k}
     \end{equation}
+
+    \subsubsection{Stating the optimization problem}
+
+    We can now form the optimization problem as
+
+    \begin{align}
+      \text{minimize } & \sum\limits_{k=0}^N y_k^2 q_y + \phi_k^2 q_{\phi} + \delta_k^2 r \\
+      \text{subject to } & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [y_k, \phi_k]^T \\
+                        & \delta_{min} \leq \delta_k \leq \delta_{max}
+    \end{align}
 
 
 
