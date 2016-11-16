@@ -13,6 +13,7 @@
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 \usepackage{pstricks}
+\usepackage{steinmetz}
 
 \widowpenalty=1000
 \clubpenalty=1000
@@ -83,8 +84,8 @@
     Furthermore, in the $CC'O'$ triangle
 
     \begin{align}
-      tan\lambda &= \dfrac{O'C'}{CC'} = \dfrac{OC}{CC'} = \dfrac{CL-CR}{2CC'} \\
-      \lambda &= tan^{-1}\dfrac{CL-CR}{2CC'}
+      \text{tan}\lambda &= \dfrac{O'C'}{CC'} = \dfrac{OC}{CC'} = \dfrac{CL-CR}{2CC'} \\
+      \lambda &= \text{tan}^{-1}\dfrac{CL-CR}{2CC'}
     \end{align}
 
 
@@ -105,10 +106,10 @@
     $CL$, $CF$ and $CR$ respectively. Then, the heading angle error is
 
     \begin{align}
-      \phi = \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+      \phi = \dfrac{\pi}{2} - \text{tan}^{-1}\dfrac{CF}{CR}
     \end{align}
 
-    since $\mu + \phi + \dfrac{\pi}{2} = \pi$ and $tan(\mu) = \dfrac{CF}{CR}$.
+    since $\mu + \phi + \dfrac{\pi}{2} = \pi$ and $\text{tan}(\mu) = \dfrac{CF}{CR}$.
 
     \begin{figure}[H]\centering
       \scalebox{1}{\input{./figures/centerline_mpc_rotation.tex}}
@@ -120,7 +121,7 @@
     The overall angle error of the vehicle is then
 
     \begin{align}
-      e &= tan^{-1}\dfrac{CL-CR}{2CC'} + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+      e &= \text{tan}^{-1}\dfrac{CL-CR}{2CC'} + \dfrac{\pi}{2} - \text{tan}^{-1}\dfrac{CF}{CR}
     \end{align}
 
     Here, the length $CC'$ is unknown and can be set beforehand. Its magnitude
@@ -197,15 +198,15 @@
     the heading angle error is
 
     \begin{align}
-      \phi = \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+      \phi = \dfrac{\pi}{2} - \text{tan}^{-1}\dfrac{CF}{CR}
     \end{align}
 
-    since $\mu + \phi + \dfrac{\pi}{2} = \pi$ and $tan(\mu) = \dfrac{CF}{CR}$.
+    since $\mu + \phi + \dfrac{\pi}{2} = \pi$ and $\text{tan}(\mu) = \dfrac{CF}{CR}$.
 
     In other words, at time $t$ the vehicle should have a heading angle of
 
     \begin{align}
-      \psi_o = \psi_c + \phi = \psi_c + \dfrac{\pi}{2} - tan^{-1}\dfrac{CF}{CR}
+      \psi_o = \psi_c + \phi = \psi_c + \dfrac{\pi}{2} - \text{tan}^{-1}\dfrac{CF}{CR}
     \end{align}
 
 
@@ -278,6 +279,59 @@
 
     Can measuring displacements in $x,y$ from MOCAP and then deducing
     the vector of the vehicle's velocity be considered as velocity measurements?
+
+    For instance, let us consider two consecutively sampled points in 2D, at
+    time $t$ and at time $t+1$. Then, the magnitude of the vehicle's velocity at
+    time $t$ \textit{was}
+
+    \begin{align}
+      V_{t} &= \dfrac{\sqrt{(x_{t+1} - x_t)^2 + (y_{t+1} - y_t)^2}}{T_s}
+    \end{align}
+
+    and the orientation of that velocity was
+
+    \begin{align}
+      \phase{V_t} = \beta_t + \psi_t = \text{tan}^{-1} \dfrac{y_{t+1} - y_t}{x_{t+1} - x_t}
+    \end{align}
+
+    \begin{figure}[H]\centering
+      \scalebox{1}{\input{./figures/velocity_and_slip_ratio.tex}}
+      \caption{}
+      \label{}
+    \end{figure}
+
+    Provided that the sampling time of the vehicle's pose is sufficiently high,
+    its velocity vector can be considered to be roughly equal between sampling
+    times. In principle, MOCAP measures the pose of the vehicle 120 times a
+    second. The maximum velocity that the specific car can achieve is $60$ km/h=
+    $16.7$ m/s. In this case, the car travels $14$ cm in 1/120 seconds. The
+    vehicle's heading is governed by
+
+    \begin{align}
+      \psi_{t+1} &= \psi_t + \dfrac{T_s V_t}{l_r} \text{sin}\beta
+    \end{align}
+
+    and its maximum heading angle difference between sampling times in our case
+    is
+
+    \begin{align}
+      \Delta\psi_{max} &= \psi_{t+1} - \psi_t = \dfrac{T_s V_t}{l_r} \text{sin}\beta_{max}
+    \end{align}
+
+    but $\beta_{max}$ can be calculated from
+
+    \begin{align}
+      \beta &= +\text{tan}^{-1} (\dfrac{l_r}{l_r + l_f} \text{tan}\delta)
+    \end{align}
+
+    since the function is piecewise strictly increasing. Assuming that the
+    maximum steering angle $\delta_{max} = 60^{\circ}$, and $\beta_{max} = 0.71$
+    rad $= 27.2^{\circ}$, which makes $\Delta\psi_{max} = 21.7^{\circ}.$ In
+    summation, the vehicle's orientation can change by as much
+    as $22^\circ$ while its displacement can change by as much as $0.14$m
+    between sampling instances.
+
+    Is this rationale valid?
 
 \end{itemize}
 
