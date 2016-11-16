@@ -218,9 +218,11 @@
     We can now form the optimization problem as
 
     \begin{align}
-      \text{minimize } & \sum\limits_{k=0}^N y_k^2 q_y + \phi_k^2 q_{\phi} + \delta_k^2 r \\
-      \text{subject to } & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [y_k, \phi_k]^T \\
-                        & \delta_{min} \leq \delta_k \leq \delta_{max}
+      \text{minimize }    & \sum\limits_{k=0}^N y_k^2 q_y + \phi_k^2 q_{\phi} + \delta_k^2 r \\
+      \text{subject to }  & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [y_k, \phi_k]^T \\
+                          & \delta_{min} \leq \delta_k \leq \delta_{max} \\
+                          & y_0 = -\dfrac{1}{2}(CL-CR)cos\phi_0 \\
+                          & \phi_0 = tan^{-1}\dfrac{CL}{CF}
     \end{align}
 
 
