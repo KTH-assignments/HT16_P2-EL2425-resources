@@ -1,0 +1,234 @@
+In figure \ref{fig:centerline_mpc}, the $x$ axis is fixed on the lane's
+centerline, while axis $y$ is perpendicular to it. The origin is at point
+$O$. The vehicle is represented by point $C$. The orientation of the vehicle
+with respect to the lane (the $x$-axis) is $\phi$. Given this configuration
+and three scans, at $-90^{\circ}$, $0^{\circ}$ and $90^{\circ}$ with
+respect to the longitudinal axis of the vehicle, denoted by $CR$, $CF$ and
+$CL$ respectively, the objective is to find the distance $OC$ and the angle
+$\phi$ so that a MPC optimization problem can be solved with $OC$ and $\phi$
+acting as initial conditions. The velocity of the vehicle,
+which is constant, and its displacement along the $x$-axis are at this point
+irrelevant to the optimization problem given this configuration. The only
+source of information is the lidar itself.
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc.tex}}
+  \caption{}
+  \label{fig:centerline_mpc}
+\end{figure}
+
+
+\subsubsection{Initial conditions}
+
+\textbf{Finding $\phi$}
+
+Here we can distinguish two cases: one where the vehicle is facing the right
+lane boundary and one where it is facing the left one. It is not obvious
+in this configuration where the vehicle is heading: the only available
+information so far is only the three range scans.
+
+In the first case, the heading angle error is
+
+\begin{align}
+  \phi = \text{tan}^{-1}\dfrac{CR}{CF}
+\end{align}
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc_rotation_negative.tex}}
+  \caption{The vehicle's heading is towards the right lane boundary.}
+  \label{}
+\end{figure}
+
+In the second case, the heading angle error is
+
+\begin{align}
+  \phi = \text{tan}^{-1}\dfrac{CL}{CF}
+\end{align}
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc_rotation_positive.tex}}
+  \caption{The vehicle's heading is towards the left lane boundary.}
+  \label{}
+\end{figure}
+
+In order to deduce the correct value of $\phi$ ($-\tan^{-1}\dfrac{CR}{CF}$ or
+$\tan^{-1}\dfrac{CL}{CF}$) further ranges scans are needed. To this end,
+a difference between ranges around point $F$ is taken: starting at the
+right of $F$ and moving anti-clockwise, we calculate the difference between
+two range scans for a given angle between them. If its sign
+is negative then the vehicle is facing the left lane boundary; if not,
+it is facing the right lane boundary. This concept is depicted in figures
+\ref{fig:range_mpc_diff_positive} and  \ref{fig:range_mpc_diff_negative}.
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc_range_differences_negative.tex}}
+  \caption{$CF_0 < CF < CF_1$, hence $CF_0 - CF_1 < 0$ and $\phi = -tan^{-1} \dfrac{CR}{CF}$}
+  \label{fig:range_mpc_diff_negative}
+\end{figure}
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc_range_differences_positive.tex}}
+  \caption{$CF_0 > CF > CF_1$, hence $CF_0 - CF_1 > 0$ and $\phi = tan^{-1} \dfrac{CL}{CF}$}
+  \label{fig:range_mpc_diff_positive}
+\end{figure}
+
+
+\textbf{Finding $OC$}
+
+First we note that $OC$ does not depend on the orientation of the vehicle. Then
+
+\begin{align}
+  L_o O + OC + CR_o &= W = CR_o + CL_o
+\end{align}
+
+where $W$ is the width of the lane. But $L_o O = \dfrac{W}{2}$ hence
+
+\begin{align}
+  OC + CR_o &= \dfrac{1}{2}(CR_o + CL_o) \Leftrightarrow \\
+  OC &= \dfrac{1}{2}(CL_o - CR_o)
+\end{align}
+
+But $CL_o = CL sin\lambda$ and $CR_o = CR cos\phi$, hence
+
+
+\begin{align}
+  OC &= \dfrac{1}{2}(CL sin\lambda - CR cos\phi)
+\end{align}
+
+From triangle LCF in the case where the vehicle is facing the left lane boundary,
+we note that $\phi + \lambda + \dfrac{\pi}{2} = \pi$,
+hence $\lambda = \dfrac{\pi}{2} - \phi$. Then, we conclude that
+
+\begin{align}
+  OC &= \dfrac{1}{2}(CL - CR) cos\phi
+\end{align}
+
+
+
+
+\subsubsection{Obtaining the relevant linearized kinematic model}
+
+The model constitutes the equations of motion of the vehicle, and has two
+states ($y$ and $\phi$) and one input ($\delta$). The equations of the
+vehicle's motion that are relevant here are
+
+\begin{align}
+  \dot{y} &= v sin(\phi + \beta) \\
+  \dot{\phi} &= \dfrac{v}{l_r} sin\beta
+\end{align}
+
+Sampling with a sampling time of $T_s$ gives
+
+\begin{align}
+  y_{k+1} &= y_{k} + T_s v sin(\phi_k + \beta_k) \\
+  \phi_{k+1} &= \phi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
+\end{align}
+
+where
+
+\begin{align}
+  \beta_k = tan^{-1}\Big(\dfrac{l_r}{l_r + l_f} tan\delta_k\Big)
+\end{align}
+
+
+Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
+$t=k$ around $\delta = 0$ (which makes $\beta = 0$) gives
+
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & T_s v cos(\phi + \beta) \\\\
+    0 & 1
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k} + tan^{-1} (l_q tan\delta_k)\Big) \\
+    0 & 1
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    0 & 1
+  \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    T_s v cos(\phi + \beta) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    \dfrac{T_s v}{l_r} cos(\beta) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k} + tan^{-1} (l_q tan\delta_k)\Big) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    \dfrac{T_s v}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_k\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    \dfrac{T_s l_r v}{l_r + l_f} cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    \dfrac{T_s v}{l_r+l_f}
+  \end{bmatrix}
+\end{equation}
+
+where $l_q = \dfrac{l_r}{l_r + l_f}$
+
+
+
+
+Now we can express the linear model as
+
+\begin{align}
+  s_{k+1} = A s_k + B \delta_k
+\end{align}
+
+where
+
+\begin{equation}
+  s=
+  \begin{bmatrix}
+    y_{k} \\
+    \phi_{k}
+  \end{bmatrix}
+\end{equation}
+
+or
+
+\begin{equation}
+  \begin{bmatrix}
+    y_{k+1} \\
+    \phi_{k+1}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    0 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    y_{k} \\
+    \phi_{k}
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    \dfrac{T_s l_r v}{l_r + l_f} cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    \dfrac{T_s v}{l_r+l_f}
+  \end{bmatrix}
+  \delta_{k}
+\end{equation}
+
+\subsubsection{Stating the optimization problem}
+
+We can now form the optimization problem as
+
+\begin{align}
+  \text{minimize }    & \sum\limits_{k=0}^N y_k^2 q_y + \phi_k^2 q_{\phi} + \delta_k^2 r \\
+  \text{subject to }  & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [y_k, \phi_k]^T \\
+                      & \delta_{min} \leq \delta_k \leq \delta_{max} \\
+                      & y_0 = -\dfrac{1}{2}(CL-CR)cos\phi_0 \\
+                      & \phi_0 = tan^{-1}\dfrac{CL}{CF}
+\end{align}
+
+
