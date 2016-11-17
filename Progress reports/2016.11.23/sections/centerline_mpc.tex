@@ -56,9 +56,9 @@ $\tan^{-1}\dfrac{CL}{CF}$) further ranges scans are needed. To this end,
 a difference between ranges around point $F$ is taken: starting at the
 right of $F$ and moving anti-clockwise, we calculate the difference between
 two range scans for a given angle between them. If its sign
-is negative then the vehicle is facing the left lane boundary; if not,
-it is facing the right lane boundary. This concept is depicted in figures
-\ref{fig:range_mpc_diff_positive} and  \ref{fig:range_mpc_diff_negative}.
+is negative then the vehicle is facing the right lane boundary; if not,
+it is facing the left lane boundary. This concept is depicted in figures
+\ref{fig:range_mpc_diff_negative} and  \ref{fig:range_mpc_diff_positive}.
 
 \begin{figure}[H]\centering
   \scalebox{1}{\input{./figures/centerline_mpc_range_differences_negative.tex}}
@@ -137,19 +137,19 @@ $t=k$ around $\delta = 0$ (which makes $\beta = 0$) gives
 \begin{equation}
  A =
   \begin{bmatrix}
-    1 & T_s v cos(\phi + \beta) \\\\
+    1 & T_s v cos(\phi_k + \beta_k) \\\\
     0 & 1
   \end{bmatrix}
   =
   \begin{bmatrix}
-    1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k} + tan^{-1} (l_q tan\delta_k)\Big) \\
+    1 & T_s v cos\Big(\phi_k + tan^{-1} (l_q tan\delta_k)\Big) \\\\
     0 & 1
   \end{bmatrix}
 \end{equation}
 \begin{equation}
  A =
   \begin{bmatrix}
-    1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    1 & T_s v cos\phi_k \\\\
     0 & 1
   \end{bmatrix}
 \end{equation}
@@ -157,19 +157,19 @@ $t=k$ around $\delta = 0$ (which makes $\beta = 0$) gives
 \begin{equation}
  B =
   \begin{bmatrix}
-    T_s v cos(\phi + \beta) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
-    \dfrac{T_s v}{l_r} cos(\beta) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+    T_s v cos(\phi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    \dfrac{T_s v}{l_r} cos(\beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
   \end{bmatrix}
   =
   \begin{bmatrix}
-    T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k} + tan^{-1} (l_q tan\delta_k)\Big) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    T_s v cos\Big(\phi_k + tan^{-1} (l_q tan\delta_k)\Big) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
     \dfrac{T_s v}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_k\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
   \end{bmatrix}
 \end{equation}
 \begin{equation}
  B =
   \begin{bmatrix}
-    \dfrac{T_s l_r v}{l_r + l_f} cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    \dfrac{T_s l_r v}{l_r + l_f} cos\phi_k \\\\
     \dfrac{T_s v}{l_r+l_f}
   \end{bmatrix}
 \end{equation}
@@ -204,7 +204,7 @@ or
   \end{bmatrix}
   =
   \begin{bmatrix}
-    1 & T_s v cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    1 & T_s v cos\phi_k \\\\
     0 & 1
   \end{bmatrix}
   \begin{bmatrix}
@@ -213,7 +213,7 @@ or
   \end{bmatrix}
   +
   \begin{bmatrix}
-    \dfrac{T_s l_r v}{l_r + l_f} cos\Big(tan^{-1}\dfrac{CL_k}{CF_k}\Big) \\\\
+    \dfrac{T_s l_r v}{l_r + l_f} cos\phi_k \\\\
     \dfrac{T_s v}{l_r+l_f}
   \end{bmatrix}
   \delta_{k}
@@ -228,7 +228,7 @@ We can now form the optimization problem as
   \text{subject to }  & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [y_k, \phi_k]^T \\
                       & \delta_{min} \leq \delta_k \leq \delta_{max} \\
                       & y_0 = -\dfrac{1}{2}(CL-CR)cos\phi_0 \\
-                      & \phi_0 = tan^{-1}\dfrac{CL}{CF}
+                      & \phi_0 = tan^{-1}\dfrac{CL}{CF} \text{ or } \phi_0 = -tan^{-1}\dfrac{CR}{CF}
 \end{align}
 
 
