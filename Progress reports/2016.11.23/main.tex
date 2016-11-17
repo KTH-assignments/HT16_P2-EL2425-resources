@@ -79,7 +79,7 @@
     The angular error of the translational component is then
 
     \begin{align}
-      e &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'}
+      e_t &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'}
     \end{align}
 
     where the minus sign is introduced due to the
@@ -113,7 +113,13 @@
       \label{}
     \end{figure}
 
-    The overall angular error of the vehicle in this case is
+    The rotational error of the vehicle in this case is
+
+    \begin{align}
+      e_r &= -\text{tan}^{-1}\dfrac{CR}{CF}
+    \end{align}
+
+    therefore the overall angular error of the vehicle in this case is
 
     \begin{align}
       e &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'} - \text{tan}^{-1}\dfrac{CR}{CF}
@@ -137,7 +143,13 @@
       \label{}
     \end{figure}
 
-    The overall angular error of the vehicle in this case is
+    The rotational error of the vehicle in this case is
+
+    \begin{align}
+      e_r &= \text{tan}^{-1}\dfrac{CL}{CF}
+    \end{align}
+
+    therefore the overall angular error of the vehicle in this case is
 
     \begin{align}
       e &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'} + \text{tan}^{-1}\dfrac{CL}{CF}
@@ -151,20 +163,20 @@
     $\tan^{-1}\dfrac{CL}{CF}$) further ranges scans are needed. To this end,
     a difference between ranges around point $F$ is taken: starting at the
     right of $F$ and moving anti-clockwise, we calculate the difference between
-    two consecutive range scans for a given angle between them. If its sign
+    two range scans for a given angle between them. If its sign
     is negative then the vehicle is facing the left lane boundary; if not,
     it is facing the right lane boundary. This concept is depicted in figures
     \ref{fig:range_diff_positive} and  \ref{fig:range_diff_negative}.
 
     \begin{figure}[H]\centering
       \scalebox{1}{\input{./figures/centerline_range_differences_positive.tex}}
-      \caption{$CF_0 > CF > CF_1$, hence $CF_1 - CF_0 < 0$ and $\phi = tan^{-1} \dfrac{CL}{CF}$}
+      \caption{$CF_0 > CF > CF_1$, hence $CF_0 - CF_1 > 0$ and $\phi = tan^{-1} \dfrac{CL}{CF}$}
       \label{fig:range_diff_positive}
     \end{figure}
 
     \begin{figure}[H]\centering
       \scalebox{1}{\input{./figures/centerline_range_differences_negative.tex}}
-      \caption{$CF_0 < CF < CF_1$, hence $CF_1 - CF_0 > 0$ and $\phi = -tan^{-1} \dfrac{CR}{CF}$}
+      \caption{$CF_0 < CF < CF_1$, hence $CF_0 - CF_1 < 0$ and $\phi = -tan^{-1} \dfrac{CR}{CF}$}
       \label{fig:range_diff_negative}
     \end{figure}
 
