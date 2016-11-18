@@ -1,0 +1,191 @@
+In figure \ref{fig:circular_mpc}, the vehicle $C$, whose velocity is constant
+and denoted by $v$, is to track a circle whose center is $O'$ and whose
+radius is $O'R$. Its orientation relative to the global coordinate system is
+$\psi$. The orientation of $R$ relative to the global coordinate system is
+$\theta$. The vehicle's coordinates are $(x_c, y_c)$. The aim is to find the
+vehicle's deviation from $R$ in terms of translation along the $x$ and $y$ axes
+and rotation around $O$.
+
+\begin{figure}[H]\centering
+  \scalebox{0.8}{\input{./figures/circular_mpc.tex}}
+  \caption{}
+  \label{fig:circular_mpc}
+\end{figure}
+
+The solution to the problem can be decomposed into two separate components:
+a translational and a rotational one.
+
+\subsubsection{Translational component}
+
+Here, we assume that the orientation of the tangent at $R$ is the same of that
+of the vehicle and equal to $\psi$. Given the distance $RC$ (the coordinates of
+both $R$ and $C$ are known) we are interested in finding the displacements
+$RC_x$ and $RC_y$. From triangle $C_yRC$ we can immediately deduce that
+
+\begin{align}
+  RC_x &= RC sin\psi \\
+  RC_y &= -RC cos\psi \\
+\end{align}
+
+where $RC = \sqrt{(x_C - x_R)^2 + (y_C - y_R)^2}$
+
+\begin{figure}[H]\centering
+  \scalebox{0.8}{\input{./figures/circular_mpc_translational.tex}}
+  \caption{}
+  \label{}
+\end{figure}
+
+
+\subsubsection{Rotational component}
+
+Here, we assume that the only deviation of $C$ from $R$ is only in terms of
+orientation. From figure \ref{fig:circular_mp_rotational} we can easily
+discern that the angular error is $\psi-\theta$.
+
+\begin{figure}[H]\centering
+  \scalebox{0.8}{\input{./figures/circular_mpc_rotational.tex}}
+  \caption{}
+  \label{fig:circular_mp_rotational}
+\end{figure}
+
+
+\subsubsection{Obtaining the relevant linearized kinematic model}
+
+The model constitutes the equations of motion of the vehicle, and has three
+states ($x$, $y$ and $\psi$) and one input ($\delta$). The equations of the
+vehicle's motion that are relevant here are
+
+\begin{align}
+  \dot{x} &= v cos(\psi + \beta) \\
+  \dot{y} &= v sin(\psi + \beta) \\
+  \dot{\psi} &= \dfrac{v}{l_r} sin\beta
+\end{align}
+
+Sampling with a sampling time of $T_s$ gives
+
+\begin{align}
+  x_{k+1} &= x_{k} + T_s v cos(\psi_k + \beta_k) \\
+  y_{k+1} &= y_{k} + T_s v sin(\psi_k + \beta_k) \\
+  \psi_{k+1} &= \psi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
+\end{align}
+
+where
+
+\begin{align}
+  \beta_k = tan^{-1}\Big(\dfrac{l_r}{l_r + l_f} tan\delta_k\Big)
+\end{align}
+
+
+Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
+$t=k$ around $\delta = 0$ (which makes $\beta = 0$) gives
+
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & 0 & -T_s v sin(\psi_k + \beta_k) \\\\
+    0 & 1 & T_s v cos(\psi_k + \beta_k) \\\\
+    0 & 0 & 1
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & 0 & -T_s v sin\Big(\psi_k + tan^{-1} (l_q tan\delta_k)\Big) \\\\
+    0 & 1 & T_s v cos\Big(\psi_k + tan^{-1} (l_q tan\delta_k)\Big) \\\\
+    0 & 0 & 1
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & 0 & -T_s v sin(\psi_k) \\\\
+    0 & 1 & T_s v cos(\psi_k) \\\\
+    0 & 0 & 1
+  \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    -T_s v sin(\psi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    T_s v cos(\psi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    \dfrac{T_s v}{l_r} cos(\beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    -T_s v sin\Big(\psi_k + tan^{-1} (l_q tan\delta_k)\Big) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    T_s v cos\Big(\psi_k + tan^{-1} (l_q tan\delta_k)\Big) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k} \\
+    \dfrac{T_s v}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_k\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_k + cos^2\delta_k}
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    -\dfrac{T_s l_r v}{l_r + l_f} sin\psi_k \\\\
+    \dfrac{T_s l_r v}{l_r + l_f} cos\psi_k \\\\
+    \dfrac{T_s v}{l_r+l_f}
+  \end{bmatrix}
+\end{equation}
+
+where $l_q = \dfrac{l_r}{l_r + l_f}$
+
+
+
+
+Now we can express the linear model as
+
+\begin{align}
+  s_{k+1} = A s_k + B \delta_k
+\end{align}
+
+where
+
+\begin{equation}
+  s=
+  \begin{bmatrix}
+    x_{k} \\
+    y_{k} \\
+    \psi_{k}
+  \end{bmatrix}
+\end{equation}
+
+or
+
+\begin{equation}
+  \begin{bmatrix}
+    x_{k+1}
+    y_{k+1} \\
+    \psi_{k+1}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & 0 & -T_s v sin(\psi_k) \\\\
+    0 & 1 & T_s v cos(\psi_k) \\\\
+    0 & 0 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    x_{k} \\
+    y_{k} \\
+    \psi_{k}
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    -\dfrac{T_s l_r v}{l_r + l_f} sin\psi_k \\\\
+    \dfrac{T_s l_r v}{l_r + l_f} cos\psi_k \\\\
+    \dfrac{T_s v}{l_r+l_f}
+  \end{bmatrix}
+  \delta_{k}
+\end{equation}
+
+
+
+\subsubsection{Stating the optimization problem}
+
+We can now form the optimization problem as
+
+\begin{align}
+  \text{minimize }    & \sum\limits_{k=0}^N x_k^2 q_x + y_k^2 q_y + \phi_k^2 q_{\phi} + \delta_k^2 r \\
+  \text{subject to }  & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [x_k, y_k, \phi_k]^T \\
+                      & \delta_{min} \leq \delta_k \leq \delta_{max} \\
+                      & x_0 = \sqrt{(x_k - x_R)^2 + (y_C - y_R)^2} sin\phi_0 \\
+                      & y_0 = -\sqrt{(x_k - x_R)^2 + (y_C - y_R)^2} cos\phi_0 \\
+                      & \phi_0 = \psi_k - \theta_R
+\end{align}
