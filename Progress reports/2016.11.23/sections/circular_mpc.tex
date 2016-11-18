@@ -1,10 +1,10 @@
 In figure \ref{fig:circular_mpc}, the vehicle $C$, whose velocity is constant
 and denoted by $v$, is to track a circle whose center is $O'$ and whose
 radius is $O'R$. Its orientation relative to the global coordinate system is
-$\psi$. The orientation of $R$ relative to the global coordinate system is
-$\theta$. The vehicle's coordinates are $(x_c, y_c)$. The aim is to find the
-vehicle's deviation from $R$ in terms of translation along the $x$ and $y$ axes
-and rotation around $O$.
+$\psi$. $R$ is the point $C$ is to track. The orientation of $R$ relative to
+the global coordinate system is $\theta$. The vehicle's coordinates are
+$(x_c, y_c)$. The aim is to find the vehicle's deviation from $R$ in terms of
+translation along the $x$ and $y$ axes and rotation around the $x$-axis.
 
 \begin{figure}[H]\centering
   \scalebox{0.8}{\input{./figures/circular_mpc.tex}}
@@ -40,7 +40,7 @@ where $RC = \sqrt{(x_C - x_R)^2 + (y_C - y_R)^2}$
 
 Here, we assume that the only deviation of $C$ from $R$ is only in terms of
 orientation. From figure \ref{fig:circular_mp_rotational} we can easily
-discern that the angular error is $\psi-\theta$.
+discern that the angular error is $\theta -\psi$.
 
 \begin{figure}[H]\centering
   \scalebox{0.8}{\input{./figures/circular_mpc_rotational.tex}}
@@ -151,7 +151,7 @@ or
 
 \begin{equation}
   \begin{bmatrix}
-    x_{k+1}
+    x_{k+1} \\
     y_{k+1} \\
     \psi_{k+1}
   \end{bmatrix}
@@ -185,7 +185,7 @@ We can now form the optimization problem as
   \text{minimize }    & \sum\limits_{k=0}^N x_k^2 q_x + y_k^2 q_y + \phi_k^2 q_{\phi} + \delta_k^2 r \\
   \text{subject to }  & s_{k+1} = A s_k + B \delta_k,\text{ where } s_k = [x_k, y_k, \phi_k]^T \\
                       & \delta_{min} \leq \delta_k \leq \delta_{max} \\
-                      & x_0 = \sqrt{(x_k - x_R)^2 + (y_C - y_R)^2} sin\phi_0 \\
-                      & y_0 = -\sqrt{(x_k - x_R)^2 + (y_C - y_R)^2} cos\phi_0 \\
-                      & \phi_0 = \psi_k - \theta_R
+                      & x_0 = RC sin\phi_0 \\
+                      & y_0 = -RC cos\phi_0 \\
+                      & \phi_0 = \theta_R - \psi
 \end{align}
