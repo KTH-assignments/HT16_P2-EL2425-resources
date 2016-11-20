@@ -14,22 +14,21 @@ params.nstates              = 3;                        % number of states
 params.ninputs              = 1;                        % number of inputs
 params.l_f                  = 0.17;
 params.l_r                  = 0.16;
+params.l_q                  = params.l_r / (params.l_r + params.l_f);
 
 % control parameters
-params.N                    = 100;                        % The horizon
-params.Q                    = [100 0 0; 0 100 0; 0 0 0.01];
-% params.Q                    = eye(3);
+params.N                    = 20;                        % The horizon
+% params.Q                    = [1 0 0; 0 1 0; 0 0 1];
+params.Q                    = 100 * eye(3);
 params.R                    = 0.01;
 
 % initial conditions
-params.x0                   = 1.75;                        % initial x coordinate
+params.x0                   = 1.55;                        % initial x coordinate
 params.y0                   = 0;                        % initial y coordinate
-params.v0                   = 20;                       % initial speed
+params.v0                   = 1;                       % initial speed
 params.psi0                 = pi/2;                        % initial heading angle
 
-params.N_max                = 20;                        % maximum number of simulation steps
-
-
+params.N_max                = 1000;                        % maximum number of simulation steps
 
 
 %% Simulation environment
@@ -39,7 +38,7 @@ z       = zeros(params.N_max+1, params.nstates);             % z(k,j) denotes st
 mov_ref = zeros(params.N_max+1, params.nstates);             % z(k,j) denotes state j at step k-1
 u       = zeros(params.N_max, params.ninputs);             % z(k,j) denotes input j at step k-1
 z(1,:)  = [params.x0, params.y0, params.psi0]; % definition of the intial state
-
+u(1,1)  = 0;
 
 k = 0;
 circ = trajectory();
@@ -59,21 +58,33 @@ while (k < params.N_max)
 
   [~, idx] = min(dists);
   
-  mov_ref(k,:) = circ(mod(idx+15, 360) + 1, :);
+%   mov_ref(k,:) = circ(mod(idx+15, 360) + 1, :);
+  mov_ref(k,:) = circ(idx, :);
+  
+  beta = 0;
+  p = 1;
+  if (k > 1)
+    beta = atan(params.l_q * tan(u(k-1,1)));
+    p = params.l_q / (params.l_q^2 * sin(u(k-1,1))^2 + cos(u(k-1,1))^2)
+  end
     
   % The linearized model's matrices
   params.linear_A = [
-    1 0 -params.Ts * params.v0 *sin(z(k,3));
-    0 1 params.Ts * params.v0 * cos(z(k,3));
+    1 0 -params.Ts * params.v0 * sin(mov_ref(k,3) + beta);
+    0 1 params.Ts * params.v0 * cos(mov_ref(k,3) + beta);
     0 0 1];
+  
 
   params.linear_B = [
-    -params.Ts * params.l_r * params.v0 / 0.33 * sin(z(k,3));
-    params.Ts * params.v0 * params.l_r/ 0.33 * cos(z(k,3));
-    params.Ts*params.v0/0.33];
+    -params.Ts * params.v0 * sin(mov_ref(k,3) + beta) * p;
+    params.Ts * params.v0 * cos(mov_ref(k,3) + beta) * p;
+    params.Ts * params.v0 / params.l_r * cos(beta) * p];
 
   % Ensure stability
-%   [params.Qf,~,~] = dare(params.linear_A, params.linear_B, params.Q, params.R);
+%   [params.Qf,~,~, err] = dare(params.linear_A, params.linear_B, params.Q, params.R);
+%   if(err == -1 || err == -2)
+%     params.Qf = params.Q;
+%   end
 
 
   yalmip('clear')

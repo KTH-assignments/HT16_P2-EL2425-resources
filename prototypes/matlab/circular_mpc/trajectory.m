@@ -13,11 +13,14 @@ function trajectory = trajectory()
 
       trajectory(i+1, 1) = x;
       trajectory(i+1, 2) = y;
-      trajectory(i+1, 3) = mod(theta, 2*pi);
+      trajectory(i+1, 3) = theta;
 
   end
   
+  trajectory(272:end,3) = trajectory(272:end,3) + 2*pi;
+  
 %   plot(trajectory(:,1), trajectory(:,2))
 %   axis equal
-
+%   figure
+%   plot(trajectory(:,3))
 end
