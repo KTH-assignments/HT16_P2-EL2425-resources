@@ -23,12 +23,12 @@ params.Q                    = [1 0 0; 0 1 0; 0 0 8];
 params.R                    = 1;
 
 % initial conditions
-params.x0                   = 1.6;                        % initial x coordinate
-params.y0                   = 0.0;                        % initial y coordinate
+params.x0                   = 0;                        % initial x coordinate
+params.y0                   = 1.55;                        % initial y coordinate
 params.v0                   = 1;                       % initial speed
-params.psi0                 = pi/2;                        % initial heading angle
+params.psi0                 = pi;                        % initial heading angle
 
-params.N_max                = 400;                        % maximum number of simulation steps
+params.N_max                = 1000;                        % maximum number of simulation steps
 
 
 %% Simulation environment
@@ -46,44 +46,50 @@ plot(circ(:,1), circ(:,2))
 hold on
 axis equal
 
-  
+
 
 while (k < params.N_max)
   k = k+1;
-  
+
   dists = sqrt((circ(:,1)-z(k,1)).^2 + (circ(:,2)-z(k,2)).^2);
 
   [~, idx] = min(dists);
-  
+
 %   mov_ref(k,:) = circ(mod(idx+15, 360) + 1, :);
   mov_ref(k,:) = circ(idx, :);
-  
-  
+
+
   beta = 0;
   p = 1;
   if (k > 1)
     beta = atan(params.l_q * tan(u(k-1,1)));
     p = params.l_q / (params.l_q^2 * sin(u(k-1,1))^2 + cos(u(k-1,1))^2);
-    
-    % Do not stop because the trajectory is finite, keep moving.
+
+    % Do not stop because the trajectory is finite
     if (mov_ref(k,3) < mov_ref(k-1,3))
       circ(idx,3) = circ(idx,3) + 2*pi;
       mov_ref(k,3) = mov_ref(k,3) + 2*pi;
     end
 
   end
-    
-  % The linearized model's matrices
-  params.linear_A = [
-    1 0 -params.Ts * params.v0 * sin(mov_ref(k,3) + beta);
-    0 1 params.Ts * params.v0 * cos(mov_ref(k,3) + beta);
-    0 0 1];
-  
 
-  params.linear_B = [
-    -params.Ts * params.v0 * sin(mov_ref(k,3) + beta) * p;
-    params.Ts * params.v0 * cos(mov_ref(k,3) + beta) * p;
-    params.Ts * params.v0 / params.l_r * cos(beta) * p];
+  if (k == 1)
+    params.linear_A = [1 0 -sin(mov_ref(k,3) + atan((16*tan(0))/33))/100;0 1 cos(mov_ref(k,3) + atan((16*tan(0))/33))/100;0 0 1];
+    params.linear_B = [-(4*sin(mov_ref(k,3) + atan((16*tan(0))/33))*(tan(0)^2 + 1))/(825*((256*tan(0)^2)/1089 + 1));(4*cos(mov_ref(k,3) + atan((16*tan(0))/33))*(tan(0)^2 + 1))/(825*((256*tan(0)^2)/1089 + 1));(tan(0)^2 + 1)/(33*((256*tan(0)^2)/1089 + 1)^(1/2)) - (256*tan(0)^2*(tan(0)^2 + 1))/(35937*((256*tan(0)^2)/1089 + 1)^(3/2))];
+  end
+
+  if (k > 1)
+
+    if (mov_ref(k,3) < mov_ref(k-1,3))
+        mov_ref(k,3) = mov_ref(k,3) + 2*pi;
+        circ(idx,3) = circ(idx,3) + 2*pi;
+    end
+
+    params.linear_A = [1 0 -sin(mov_ref(k,3) + atan((16*tan(u(k-1,1)))/33))/100;0 1 cos(mov_ref(k,3) + atan((16*tan(u(k-1,1)))/33))/100;0 0 1];
+    params.linear_B = [-(4*sin(mov_ref(k,3) + atan((16*tan(u(k-1,1)))/33))*(tan(u(k-1,1))^2 + 1))/(825*((256*tan(u(k-1,1))^2)/1089 + 1));(4*cos(mov_ref(k,3) + atan((16*tan(u(k-1,1)))/33))*(tan(u(k-1,1))^2 + 1))/(825*((256*tan(u(k-1,1))^2)/1089 + 1));(tan(u(k-1,1))^2 + 1)/(33*((256*tan(u(k-1,1))^2)/1089 + 1)^(1/2)) - (256*tan(u(k-1,1))^2*(tan(u(k-1,1))^2 + 1))/(35937*((256*tan(u(k-1,1))^2)/1089 + 1)^(3/2))];
+  end
+
+
 
   % Ensure stability
 %   [params.Qf,~,~, err] = dare(params.linear_A, params.linear_B, params.Q, params.R);
@@ -133,15 +139,15 @@ while (k < params.N_max)
   % Optimize
   optimize([constraints, z_mpc(1,:) == z(k,:)], J, ops);
 
-  %% snatch first predicted input 
+  %% snatch first predicted input
   u(k,:) = value(u_mpc(1,:));
 
 
   % simulate the vehicle
   z(k+1,:) = car_sim(z(k,:), u(k,:), params);
 
-  
-  
+
+
 end
 
 plot(z(:,1), z(:,2))

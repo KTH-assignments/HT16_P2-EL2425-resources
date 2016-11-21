@@ -18,5 +18,9 @@ function trajectory = trajectory()
   end
   
   trajectory(272:end,3) = trajectory(272:end,3) + 2*pi;
-
+%   
+%   plot(trajectory(:,1), trajectory(:,2))
+%   axis equal
+%   figure
+%   plot(trajectory(:,3))
 end
