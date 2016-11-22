@@ -17,7 +17,7 @@ params.tau = 1.35;
 params.N = 20;   % The horizon
 params.Q = [1 0 0 0; 0 1 0 0; 0 0 2 0; 0 0 0 2];
 % params.Q = 100 * eye(4);
-params.R = [0.01 0; 0 0.2];
+params.R = [0.01 0; 0 0.1];
 
 %% Initial conditions for the state of the vehicle
 params.x0 = 1.55;  
@@ -26,7 +26,7 @@ params.v0 = 0;
 params.psi0 = pi/2;
 
 %% Number of iterations
-params.N_max = 200;
+params.N_max = 1000;
 
 %% The circular trajectory. 
 % Every point on the circle is a reference
