@@ -49,8 +49,8 @@ equations of the vehicle's motion that are relevant here are
 Sampling with a sampling time of $T_s$ gives
 
 \begin{align}
-  x_{k+1} &= x_{k} + T_s v cos(\psi_k + \beta_k) \\
-  y_{k+1} &= y_{k} + T_s v sin(\psi_k + \beta_k) \\
+  x_{k+1} &= x_{k} + T_s v_k cos(\psi_k + \beta_k) \\
+  y_{k+1} &= y_{k} + T_s v_k sin(\psi_k + \beta_k) \\
   v_{k+1} &= v_{k} + \dfrac{T_s}{\tau} (v_{i,k} - v_{k}) \\
   \psi_{k+1} &= \psi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
 \end{align}

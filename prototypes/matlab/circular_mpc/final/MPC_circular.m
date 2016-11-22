@@ -15,8 +15,7 @@ params.tau = 1.35;
 
 % Control Parameters
 params.N = 20;   % The horizon
-params.Q = [1 0 0 0; 0 1 0 0; 0 0 2 0; 0 0 0 2];
-% params.Q = 100 * eye(4);
+params.Q = [10 0 0 0; 0 10 0 0; 0 0 10 0; 0 0 0 10];
 params.R = [0.01 0; 0 0.1];
 
 %% Initial conditions for the state of the vehicle
@@ -26,12 +25,12 @@ params.v0 = 0;
 params.psi0 = pi/2;
 
 %% Number of iterations
-params.N_max = 1000;
+params.N_max = 200;
 
 %% The circular trajectory. 
 % Every point on the circle is a reference
 % to be followed by the vehicle. x_o and y_o are the coordinates of 
-% the circle's center. r_c is its radius and v_c is the velocity that
+% the circle's center. r is its radius and v_ref is the velocity that
 % the vehicle should have at each reference point
 trajectory_params.x_o = 0;
 trajectory_params.y_o = 0;
@@ -89,10 +88,8 @@ if (k > 1)
 end
 
 %%   Ensure stability
-%   [params.Qf,~,~, err] = dare(params.linear_A, params.linear_B, params.Q, params.R);
-%   if(err == -1 || err == -2)
-%     params.Qf = params.Q;
-%   end
+%   [params.Qf,~,~] = dare(params.linear_A, params.linear_B, params.Q, params.R);
+
   
   yalmip('clear')
 
@@ -138,23 +135,43 @@ end
   
 end
 
+
+%% Plot state deviations and inputs
+
 figure
 plot(circ(:,1), circ(:,2))
 hold on
 plot(z(:,1), z(:,2))
+title('trajectory')
 axis equal
 hold off
 
 figure
-hold on
-plot(circ(:,3))
-plot(z(:,3))
-ylim([params.v0, trajectory_params.v_ref])
-hold off
-
-figure
-hold on
+subplot(2,2,1)
 plot(circ(:,1), circ(:,2))
+hold on
 plot(mov_ref(:,1), mov_ref(:,2))
+title('given reference')
 axis equal
 hold off
+
+subplot(2,2,2)
+plot((z(1:end-1, 1) - mov_ref(:,1)).^2 + (z(1:end-1, 2) - mov_ref(:,2)).^2)
+title('distance deviation')
+
+subplot(2,2,3)
+plot(mov_ref(:,3) - z(1:end-1,3))
+title('velocity deviation')
+ylim([params.v0, trajectory_params.v_ref])
+
+subplot(2,2,4)
+plot((mov_ref(:,4) - z(1:end-1,4))*180/pi)
+title('orientation deviation')
+
+figure
+subplot(1,2,1)
+plot(u(:,1))
+title('input velocity')
+subplot(1,2,2)
+plot(u(:,2) * 180 / pi)
+title('input steering angle')
