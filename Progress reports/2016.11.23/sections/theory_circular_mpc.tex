@@ -1,0 +1,153 @@
+In figure \ref{fig:circular_mpc}, the vehicle $C$, whose velocity is constant
+and denoted by $v$, is to track a circle whose center is $O'$ and whose
+radius is $O'R$. Its orientation relative to the global coordinate system is
+$\psi$. $R(x_R, y_R)$ is the point $C$ is to track. The orientation of $R$
+relative to the global coordinate system is $\psi_R$. The vehicle's coordinates
+are $(x_c, y_c)$.
+
+
+\begin{figure}[H]\centering
+  \scalebox{0.8}{\input{./figures/circular_mpc.tex}}
+  \caption{}
+  \label{fig:circular_mpc}
+\end{figure}
+
+$R$ is a moving reference point and its pose is found as follows. Given $C$ and
+the trajectory of the circle, point $R$ is the point with the least distance
+to $C$ among all points of the trajectory. Since the circle is known a priori
+and comprised by a set of poses, $R$ is known.
+
+The aim is for the vehicle $C$ to minimize its deviation from $R$, in other
+words we want to drive the differences
+
+\begin{equation}
+  \begin{bmatrix}
+    x_c - x_R \\
+    y_c - y_R \\
+    v_c - v_R \\
+    \psi_c - \psi_R
+  \end{bmatrix}
+  \rightarrow 0
+\end{equation}
+
+where $v_c$ and $v_R$ are the velocities of the vehicle and the reference
+point, respectively.
+
+\textbf{Obtaining the linearized kinematic model}
+
+The model constitutes the equations of motion of the vehicle, and has four
+states ($x$, $y$, $v$ and $\psi$) and two inputs ($v_i$ and $\delta$). The
+equations of the vehicle's motion that are relevant here are
+
+\begin{align}
+  \dot{x} &= v cos(\psi + \beta) \\
+  \dot{y} &= v sin(\psi + \beta) \\
+  \dot{v} &= \dfrac{v_i - v}{\tau} \\
+  \dot{\psi} &= \dfrac{v}{l_r} sin\beta
+\end{align}
+
+Sampling with a sampling time of $T_s$ gives
+
+\begin{align}
+  x_{k+1} &= x_{k} + T_s v cos(\psi_k + \beta_k) \\
+  y_{k+1} &= y_{k} + T_s v sin(\psi_k + \beta_k) \\
+  v_{k+1} &= v_{k} + \dfrac{T_s}{\tau} (v_{i,k} - v_{k}) \\
+  \psi_{k+1} &= \psi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
+\end{align}
+
+where
+
+\begin{align}
+  \beta_k = tan^{-1}\Big(\dfrac{l_r}{l_r + l_f} tan\delta_{k-1}\Big)
+\end{align}
+
+
+Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
+$t=k$ around $\psi = \psi_R$, $v = v_R$ and $\delta = \delta_{k-1}$
+($\delta_k$ is to be determined at time $k$):
+
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & 0 & T_s cos(\psi_R + \beta_k) & -T_s v_R sin(\psi_R + \beta_k) \\\\
+    0 & 1 & T_s sin(\psi_R + \beta_k) & T_s v_R cos(\psi_R + \beta_k) \\\\
+    0 & 0 & 1-\dfrac{T_s}{\tau} & 0 \\\\
+    0 & 0 & \dfrac{T_s}{l_r}sin(\beta_k) & 1
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+  A =
+  \begin{bmatrix}
+    1 & 0 & T_s cos\Big(\psi_R + tan^{-1} (l_q tan\delta_{k-1})\Big) & -T_s v_k sin\Big(\psi_R + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 1 & T_s sin\Big(\psi_R + tan^{-1} (l_q tan\delta_{k-1})\Big) & T_s v_k cos\Big(\psi_R + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 0 & 1-\dfrac{T_s}{\tau} & 0 \\\\
+    0 & 0 & \dfrac{T_s}{l_r}sin(tan^{-1} (l_q tan\delta_{k-1})) & 1
+  \end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    0 & -T_s v_R sin(\psi_R + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    0 & T_s v cos(\psi_R + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s}{\tau} v_R & 0 \\
+    0 & \dfrac{T_s v}{l_r} cos(\beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+  B =
+  \begin{bmatrix}
+    0 & -T_s v_R sin\Big(\psi_R + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    0 & T_s v_R cos\Big(\psi_R + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s}{\tau} v_R & 0 \\
+    0 & \dfrac{T_s v}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_{k-1}\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}
+\end{equation}
+
+
+where $l_q = \dfrac{l_r}{l_r + l_f}$
+
+
+Now we can express the linear model as
+
+\begin{align}
+  s_{k+1} = A s_k + B u_k
+\end{align}
+
+where
+
+\begin{equation}
+  s_k=
+  \begin{bmatrix}
+    x_{k} \\
+    y_{k} \\
+    v_{k} \\
+    \psi_{k}
+  \end{bmatrix}
+\end{equation}
+
+and
+
+\begin{equation}
+  u_k=
+  \begin{bmatrix}
+    v_{i,k} \\
+    \delta_{k}
+  \end{bmatrix}
+\end{equation}
+
+
+
+\textbf{Stating the optimization problem}
+
+We can now form the optimization problem to be solved at time $t$ as
+
+\begin{align}
+  \text{minimize }    & \sum\limits_{k=0}^N (s_k - s_{ref})^T Q (s_k - s_{ref}) + u_k^T R u_k \\
+  \text{subject to }  & s_{k+1} = A s_k + B u_k, \text{ where } s_k = [x_k, y_k, v_k, \psi_k]^T, u_k = [v_{i,k}, \delta_k]^T \\
+                      & u_{i}^{min} \leq u_{i,k} \leq u_{i}^{max} \\
+                      & \delta^{min} \leq \delta_k \leq \delta^{max} \\
+                      & s_{ref} = (x_R, y_R, v_R, \psi_R) \\
+                      & s_0 = (x_t, y_t, v_t, \psi_t)
+\end{align}

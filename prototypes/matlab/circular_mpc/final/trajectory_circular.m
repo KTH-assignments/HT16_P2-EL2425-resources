@@ -18,12 +18,14 @@ function trajectory_circular = trajectory_circular(trajectory_params)
       trajectory_circular(i+1, 4) = theta;
   end
 
-%% Plotting the trajectory and desired corresponding angle
+
+
+  trajectory_circular(272:end,4) = trajectory_circular(272:end,4) + 2*pi;
+  
+  % Plotting the trajectory and desired corresponding angle
 %   plot(trajectory_circular(:,1), trajectory_circular(:,2))
 %   axis equal
 %   figure
 %   plot(trajectory_circular(:,3))
-
-%   trajectory_circular(272:end,3) = trajectory_circular(272:end,3) + 2*pi;
 
 end

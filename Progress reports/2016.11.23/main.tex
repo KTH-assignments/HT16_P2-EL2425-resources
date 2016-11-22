@@ -27,27 +27,31 @@
 
 \section{Done}
 
-%\begin{itemize}
-%\end{itemize}
+\begin{itemize}
+  \item Installation of the optimization library in python needed for MPC.
+    However, there are issues with the statement of the problem in terms of the
+    language itself. This stating ``does not conform to DCP rules".
+\end{itemize}
 
 
 
 \section{Ongoing}
 
-  \subsection{Theoretical solution to tracking the centerline of a lane using
-    a PID controller}
+  \subsection{Tracking the centerline of a lane using a PID controller}
 
-    \input{./sections/centerline_pid.tex}
+    \input{./sections/theory_centerline_pid.tex}
 
-  \subsection{Theoretical solution to tracking the centerline of a lane using
-    a MPC controller}
+  \subsection{Tracking the centerline of a lane using a MPC controller}
 
-    \input{./sections/centerline_mpc.tex}
+    \input{./sections/theory_centerline_mpc.tex}
 
-  \subsection{Theoretical solution to tracking the circumference of a circle
-    using a MPC controller}
 
-    \input{./sections/circular_mpc.tex}
+  \subsection{Tracking the circumference of a circle using a MPC controller}
+
+    \subsubsection{Theory}
+      \input{./sections/theory_circular_mpc.tex}
+    \subsubsection{Simulation}
+      \input{./sections/simulation_circular_mpc.tex}
 
 \section{Issues}
 

@@ -15,21 +15,21 @@ params.tau = 1.35;
 
 % Control Parameters
 params.N = 20;   % The horizon
-params.Q = [1 0 0 0; 0 1 0 0; 0 0 2 0; 0 0 0 2];
-% params.Q = 100 * eye(4);
-params.R = [0.01 0; 0 0.2];
+params.Q = [1 0 0 0; 0 1 0 0; 0 0 0.1 0; 0 0 0 8];
+% params.Q = 100 * eye(3);
+params.R = [0.01 0; 0 1];
 
-%% Initial conditions for the state of the vehicle
+%% Initial Conditions
 params.x0 = 1.55;  
 params.y0 = 0;  
 params.v0 = 0;
 params.psi0 = pi/2;
 
 %% Number of iterations
-params.N_max = 200;
+params.N_max = 100;
 
 %% The circular trajectory. 
-% Every point on the circle is a reference
+%Every point on the circle is a reference
 % to be followed by the vehicle. x_o and y_o are the coordinates of 
 % the circle's center. r_c is its radius and v_c is the velocity that
 % the vehicle should have at each reference point
@@ -115,7 +115,7 @@ end
 
     % Input constraints
     constraints = [constraints, ...
-      0 <= u_mpc(i,1) <= 10*trajectory_params.v_ref, ...
+      0 <= u_mpc(i,1) <= trajectory_params.v_ref, ...
       -pi/3 <= u_mpc(i,2) <= pi/3];
   end
   
@@ -143,13 +143,6 @@ plot(circ(:,1), circ(:,2))
 hold on
 plot(z(:,1), z(:,2))
 axis equal
-hold off
-
-figure
-hold on
-plot(circ(:,3))
-plot(z(:,3))
-ylim([params.v0, trajectory_params.v_ref])
 hold off
 
 figure

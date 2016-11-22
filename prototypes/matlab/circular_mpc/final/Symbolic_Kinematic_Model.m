@@ -1,44 +1,44 @@
 %% EL2425 F1 Tenth Project
 function [A, B] = Symbolic_Kinematic_Model()
 
-syms xkn ykn vkn psikn xk yk vk psik Ts a V lr lf  delta Vref tau
+  syms xkn ykn vkn psikn xk yk vk psik Ts lr lf delta Vref tau
 
-xkn = xk + Ts*V*cos(psik + atan((lr/(lr+lf))*tan(delta)));
-ykn = yk + Ts*V*sin(psik + atan((lr/(lr+lf))*tan(delta)));
-vkn = (Vref - vk) / tau;
-psikn = psik + Ts*(V/lr)*sin(atan((lr/(lr+lf))*tan(delta)));
+  xkn = xk + Ts*vk*cos(psik + atan((lr/(lr+lf))*tan(delta)));
+  ykn = yk + Ts*vk*sin(psik + atan((lr/(lr+lf))*tan(delta)));
+  vkn = vk + Ts*(Vref - vk) / tau;
+  psikn = psik + Ts*(vk/lr)*sin(atan((lr/(lr+lf))*tan(delta)));
 
-A(1,1) = diff(xkn, xk);
-A(1,2) = diff(xkn, yk);
-A(1,3) = diff(xkn, vk);
-A(1,4) = diff(xkn, psik);
+  A(1,1) = diff(xkn, xk);
+  A(1,2) = diff(xkn, yk);
+  A(1,3) = diff(xkn, vk);
+  A(1,4) = diff(xkn, psik);
 
-A(2,1) = diff(ykn, xk);
-A(2,2) = diff(ykn, yk);
-A(2,3) = diff(ykn, vk);
-A(2,4) = diff(ykn, psik);
+  A(2,1) = diff(ykn, xk);
+  A(2,2) = diff(ykn, yk);
+  A(2,3) = diff(ykn, vk);
+  A(2,4) = diff(ykn, psik);
 
-A(3,1) = diff(vkn, xk);
-A(3,2) = diff(vkn, yk);
-A(3,3) = diff(vkn, vk);
-A(3,4) = diff(vkn, psik);
+  A(3,1) = diff(vkn, xk);
+  A(3,2) = diff(vkn, yk);
+  A(3,3) = diff(vkn, vk);
+  A(3,4) = diff(vkn, psik);
 
-A(4,1) = diff(psikn, xk);
-A(4,2) = diff(psikn, yk);
-A(4,3) = diff(psikn, vk);
-A(4,4) = diff(psikn, psik);
+  A(4,1) = diff(psikn, xk);
+  A(4,2) = diff(psikn, yk);
+  A(4,3) = diff(psikn, vk);
+  A(4,4) = diff(psikn, psik);
 
-B(1,1) = diff(xkn, Vref);
-B(1,2) = diff(xkn, delta);
+  B(1,1) = diff(xkn, Vref);
+  B(1,2) = diff(xkn, delta);
 
-B(2,1) = diff(ykn, Vref);
-B(2,2) = diff(ykn, delta);
+  B(2,1) = diff(ykn, Vref);
+  B(2,2) = diff(ykn, delta);
 
-B(3,1) = diff(vkn, Vref);
-B(3,2) = diff(vkn, delta);
+  B(3,1) = diff(vkn, Vref);
+  B(3,2) = diff(vkn, delta);
 
-B(4,1) = diff(psikn, Vref);
-B(4,2) = diff(psikn, delta);
+  B(4,1) = diff(psikn, Vref);
+  B(4,2) = diff(psikn, delta);
 
 % A = subs(A, [Ts V lr lf tau], [params.Ts params.v0 params.l_r params.l_f params.tau]);
 % B = subs(B, [Ts V lr lf tau], [params.Ts params.v0 params.l_r params.l_f params.tau]);

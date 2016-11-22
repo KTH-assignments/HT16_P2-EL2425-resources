@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.1415926-2.5-0.9999.3 (TeX Live 2013/Debian) (format=xelatex 2016.2.4)  20 NOV 2016 01:37
+This is XeTeX, Version 3.1415926-2.5-0.9999.3 (TeX Live 2013/Debian) (format=xelatex 2016.2.4)  22 NOV 2016 15:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1311,7 +1311,7 @@ LaTeX Warning: No \author given.
 File: se-ascii-print.def 2011/12/02 v1.10 stringenc: Printable ASCII characters
 
 )
-(./sections/centerline_pid.tex
+(./sections/theory_centerline_pid.tex
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <12> on input line 6.
 LaTeX Font Info:    External font `lmex10' loaded for size
@@ -1337,7 +1337,7 @@ File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
 (./figures/centerline_pid_rotation_positive.tex) [3]
 (./figures/centerline_range_differences_positive.tex) [4]
 (./figures/centerline_range_differences_negative.tex))
-(./sections/centerline_mpc.tex [5] (./figures/centerline_mpc.tex)
+(./sections/theory_centerline_mpc.tex [5] (./figures/centerline_mpc.tex)
 (./figures/centerline_mpc_rotation_negative.tex) [6]
 (./figures/centerline_mpc_rotation_positive.tex)
 (./figures/centerline_mpc_range_differences_negative.tex) [7]
@@ -1346,42 +1346,37 @@ Overfull \hbox (4.66821pt too wide) detected at line 168
 []\OML/lmm/m/it/12 B \OT1/lmr/m/n/12 = [] = []
  []
 
-[9]) (./sections/circular_mpc.tex [10] (./figures/circular_mpc.tex)
+[9]) (./sections/theory_circular_mpc.tex [10] (./figures/circular_mpc.tex)
 Overfull \hbox (75.60364pt too wide) in paragraph at lines 10--11
  [][] 
  []
 
-[11]
-Overfull \hbox (61.54666pt too wide) detected at line 91
-[]\OML/lmm/m/it/12 B \OT1/lmr/m/n/12 = [] = []
- []
+[11] [12] [13]) (./sections/simulation_circular_mpc.tex)
+LaTeX Font Info:    Try loading font information for EU1+lmtt on input line 69.
 
-[12])
-LaTeX Font Info:    Try loading font information for EU1+lmtt on input line 65.
 
- (/usr/share/texlive/texmf-dist/tex/latex/euenc/eu1lmtt.fd
+(/usr/share/texlive/texmf-dist/tex/latex/euenc/eu1lmtt.fd
 File: eu1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 74.
- [13]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 74.
-
-(./main.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 74.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 74.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 78.
+ [14]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 78.
+ (./main.aux)
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 78.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 78.
 
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 74.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 78.
  ) 
 Here is how much of TeX's memory you used:
- 39445 strings out of 495576
- 832947 string characters out of 16185290
- 5931589 words of memory out of 10885256
- 41995 multiletter control sequences out of 15000+600000
+ 39449 strings out of 495576
+ 833119 string characters out of 16185290
+ 5931590 words of memory out of 10885257
+ 41994 multiletter control sequences out of 15000+600000
  27901 words of font info for 51 fonts, out of 8000000 for 9000
  40 hyphenation exceptions out of 8191
  63i,12n,75p,10400b,479s stack positions out of 5000i,500n,10000p,20000000b,80000s
 
-Output written on main.pdf (13 pages).
+Output written on main.pdf (14 pages).
