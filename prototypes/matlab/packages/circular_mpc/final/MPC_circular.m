@@ -15,17 +15,17 @@ params.tau = 1.35;
 
 % Control Parameters
 params.N = 20;   % The horizon
-params.Q = [10 0 0 0; 0 10 0 0; 0 0 10 0; 0 0 0 10];
-params.R = [0.01 0; 0 0.1];
+params.Q = [10 0 0 0; 0 10 0 0; 0 0 10 0; 0 0 0 12];
+params.R = [0.01 0; 0 1];
 
 %% Initial conditions for the state of the vehicle
-params.x0 = 1.55;  
+params.x0 = 2.55;  
 params.y0 = 0;  
 params.v0 = 0;
 params.psi0 = pi/2;
 
 %% Number of iterations
-params.N_max = 200;
+params.N_max = 400;
 
 %% The circular trajectory. 
 % Every point on the circle is a reference
@@ -65,8 +65,8 @@ while (k < params.N_max)
   
 
 if (k == 1)
-  params.linear_A = subs(symbolic_linear_A, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau mov_ref(k,3) mov_ref(k,4) 0]);
-  params.linear_B = subs(symbolic_linear_B, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau mov_ref(k,3) mov_ref(k,4) 0]);
+  params.linear_A = subs(symbolic_linear_A, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau z(k,3) z(k,4) 0]);
+  params.linear_B = subs(symbolic_linear_B, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau z(k,3) z(k,4) 0]);
   
   params.linear_A = double(params.linear_A);
   params.linear_B = double(params.linear_B);
@@ -80,8 +80,8 @@ if (k > 1)
     circ(idx,4) = circ(idx,4) + 2*pi;
   end
   
-  params.linear_A = subs(symbolic_linear_A, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau mov_ref(k,3) mov_ref(k,4) u(k-1,2)]);
-  params.linear_B = subs(symbolic_linear_B, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau mov_ref(k,3) mov_ref(k,4) u(k-1,2)]);
+  params.linear_A = subs(symbolic_linear_A, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau z(k,3) z(k,4) u(k-1,2)]);
+  params.linear_B = subs(symbolic_linear_B, [Ts lr lf tau vk psik delta], [params.Ts params.l_r params.l_f params.tau z(k,3) z(k,4) u(k-1,2)]);
 
   params.linear_A = double(params.linear_A);
   params.linear_B = double(params.linear_B);
