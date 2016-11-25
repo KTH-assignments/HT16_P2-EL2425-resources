@@ -288,10 +288,11 @@ the model being
 We can now form the optimization problem to be solved at time step $t$ as
 
 \begin{align}
-  \text{minimize }    & \sum\limits_{k=0}^N (s_k - s_{ref})^T Q (s_k - s_{ref}) + u_k^T R u_k \\
+  \text{minimize }    & \sum\limits_{k=0}^{N-1} (s_k - s_{ref})^T Q (s_k - s_{ref}) + u_k^T R u_k + x_N^T Q_f x_N \\
   \text{subject to }  & s_{k+1} = A s_k + B u_k \\
                       & u_{i}^{min} \leq u_{i,k} \leq u_{i}^{max} \\
                       & \delta^{min} \leq \delta_k \leq \delta^{max} \\
                       & s_0 = (y_t, \psi_t) \equiv (OC, \phi)\\
-                      & s_{ref} = (0,0)
+                      & s_{ref} = (0,0)\\
+                      & Q > 0, R > 0, Q_f > 0
 \end{align}
