@@ -15,18 +15,18 @@ params.tau = 1.35;
 
 % Control Parameters
 params.N = 2;   % The horizon
-params.Q = [10 0 0 0; 0 10 0 0; 0 0 10 0; 0 0 0 15];
+params.Q = [100 0 0 0; 0 100 0 0; 0 0 10 0; 0 0 0 16];
 params.R = [0.01 0; 0 0.01];
-params.DR = [0.1 0; 0 0.1];
+params.DR = [0.1 0; 0 0.01];
 
 %% Initial conditions for the state of the vehicle
-params.x0 = 0;  
-params.y0 = 1.60;  
+params.x0 = 0.1;  
+params.y0 = 2.60;  
 params.v0 = 0;
 params.psi0 = pi;
 
 %% Number of iterations
-params.N_max = 1000;
+params.N_max = 2000;
 
 %% The circular trajectory. 
 % Every point on the circle is a reference
@@ -35,7 +35,7 @@ params.N_max = 1000;
 % the vehicle should have at each reference point
 trajectory_params.x_o = 0;
 trajectory_params.y_o = 0;
-trajectory_params.r = 1.5;
+trajectory_params.r = 2.5;
 trajectory_params.v_ref = 1;
 
 %% Simulation environment
@@ -106,14 +106,15 @@ end
 
   for i = 1:params.N
     
-    if (i == 1)
-      J = J + ...
-        (z_mpc(i,:)-mov_ref(k,:)) * params.Q * (z_mpc(i,:)-mov_ref(k,:))' +  ...
-        u_mpc(i,:) * params.R * u_mpc(i,:)';
-    end
+%     if (i == 1)
+%       J = J + ...
+%         (z_mpc(i,:)-mov_ref(k,:)) * params.Q * (z_mpc(i,:)-mov_ref(k,:))' +  ...
+%         u_mpc(i,:) * params.R * u_mpc(i,:)';
+%     end
     
     if (i > 1)
       J = J + ...
+        (z_mpc(i,:)-mov_ref(k,:)) * params.Q * (z_mpc(i,:)-mov_ref(k,:))' +  ...
       (u_mpc(i,:)-u_mpc(i-1,:)) * params.DR * (u_mpc(i,:)-u_mpc(i-1,:))';
     end
     
