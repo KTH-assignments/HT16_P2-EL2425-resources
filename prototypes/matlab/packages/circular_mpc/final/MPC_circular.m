@@ -14,18 +14,19 @@ params.l_q = params.l_r / (params.l_r + params.l_f);
 params.tau = 1.35;
 
 % Control Parameters
-params.N = 20;   % The horizon
-params.Q = [10 0 0 0; 0 10 0 0; 0 0 10 0; 0 0 0 12];
-params.R = [0.01 0; 0 1];
+params.N = 2  ;   % The horizon
+params.Q = [10 0 0 0; 0 10 0 0; 0 0 10 0; 0 0 0 1];
+params.R = [0.01 0; 0 0.01];
+% params.DR = [1 0; 0 1];
 
 %% Initial conditions for the state of the vehicle
-params.x0 = 2.55;  
-params.y0 = 0;  
+params.x0 = 0.1;  
+params.y0 = 1.60;  
 params.v0 = 0;
-params.psi0 = pi/2;
+params.psi0 = pi;
 
 %% Number of iterations
-params.N_max = 400;
+params.N_max = 2000;
 
 %% The circular trajectory. 
 % Every point on the circle is a reference
@@ -52,7 +53,7 @@ syms xkn ykn vkn psikn xk yk vk psik Ts lr lf delta Vref tau
 
 k = 0;
 while (k < params.N_max)
-  k = k+1;
+  k = k+1
   
   % The distances of all the points in the trajectory to the vehicle
   dists = sqrt((circ(:,1)-z(k,1)).^2 + (circ(:,2)-z(k,2)).^2);
@@ -88,9 +89,11 @@ if (k > 1)
 end
 
 %%   Ensure stability
-%   [params.Qf,~,~] = dare(params.linear_A, params.linear_B, params.Q, params.R);
-
-  
+  [params.Qf,~,~,err] = dare(params.linear_A, params.linear_B, params.Q, params.R);
+  if (err == -1 || err == -2)
+    params.Qf = params.Q;
+  end
+    
   yalmip('clear')
 
   % The predicted state and control variables
@@ -102,10 +105,19 @@ end
   J = 0;
 
   for i = 1:params.N
-    J = J + ...
-      (z_mpc(i,:)-mov_ref(k,:)) * params.Q * (z_mpc(i,:)-mov_ref(k,:))' +  ...
-      u_mpc(i,:) * params.R * u_mpc(i,:)';
-
+    
+%     if (i == 1)
+      J = J + ...
+        (z_mpc(i,:)-mov_ref(k,:)) * params.Q * (z_mpc(i,:)-mov_ref(k,:))' +  ...
+        u_mpc(i,:) * params.R * u_mpc(i,:)';
+%     end
+    
+%     if (i > 1)
+%       J = J + ...
+%         (z_mpc(i,:)-mov_ref(k,:)) * params.Q * (z_mpc(i,:)-mov_ref(k,:))' +  ...
+%       (u_mpc(i,:)-u_mpc(i-1,:)) * params.DR * (u_mpc(i,:)-u_mpc(i-1,:))';
+%     end
+    
     % Model contraints
     constraints = [constraints, ...
       z_mpc(i+1,:)' == params.linear_A * z_mpc(i,:)' + params.linear_B * u_mpc(i,:)'];
@@ -117,8 +129,13 @@ end
   end
   
   %  terminal cost
-%   J = J + (z_mpc(params.N+1, :) - mov_ref(k,:)) * params.Qf * (z_mpc(params.N+1, :)-mov_ref(k,:))';
+  J = J + (z_mpc(params.N+1, :) - mov_ref(k,:)) * params.Qf * (z_mpc(params.N+1, :)-mov_ref(k,:))';
 
+  % terminal constraints
+  constraints = [constraints, ...
+    -0.1 <= z_mpc(params.N+1,4) - mov_ref(k,4) <= 0.1
+    ];
+    
   assign(z_mpc(1,:), z(k,:));
 
   % Options
@@ -133,18 +150,21 @@ end
   % simulate the vehicle
   z(k+1,:) = car_sim_circular(z(k,:), u(k,:), params);
   
+  
+%   figure
+  plot(circ(:,1), circ(:,2))
+  hold on
+  plot(z(:,1), z(:,2))
+  axis equal
+  drawnow
+  title('trajectory')
+  hold off
+
+
 end
 
 
 %% Plot state deviations and inputs
-
-figure
-plot(circ(:,1), circ(:,2))
-hold on
-plot(z(:,1), z(:,2))
-title('trajectory')
-axis equal
-hold off
 
 figure
 subplot(2,2,1)

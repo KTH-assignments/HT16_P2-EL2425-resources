@@ -31,6 +31,13 @@
   \item Installation of the optimization library in python needed for MPC.
     However, there are issues with the statement of the problem in terms of the
     language itself. This stating ``does not conform to DCP rules".
+
+    \item Three packages are theoretically solved. PID Centerline,
+      MPC centerline, MPC circular. Not tested in the reality due to the
+      above mentioned issue.
+
+    \item A new time-Constant has been updated as $1.3452$s. The experimental
+      method and results are detailed hereafter.
 \end{itemize}
 
 
@@ -53,18 +60,62 @@
     \subsubsection{Simulation}
       \input{./sections/simulation_circular_mpc.tex}
 
+		\subsubsection{Model Validation}
+
+		In order to create datasets to be compared against the simulations the
+    following experiment has been done:\\
+	  Feed the real car with a set of different inputs (in open loop,i.e. without
+    controller) to recreate the expected behaviour. The recorded trajectory
+    from Mocap will be used to run offline experiments.
+
+
+
+		 \subsubsection{Time constant test}
+
+		 With assumption that the car’s dynamic is a 1st-order system, we drive the
+     car in straight line along the Y axis(global) as far as possible with speed of
+     14 \%, 16 \%, 18\% and 20 \% respectively.
+     It is hard to reach the static situation since the space is limited, that is, the
+     data only describe the beginning part of the step response. One way to solve
+     the problem is using the Identification Toolbox in Matlab, which is capable of
+     “constructing mathematical models of dynamic systems from measured input-
+     output data”.
+     The τ value is 1.3452 by average.
+
 \section{Issues}
 
 \begin{itemize}
   \item There might be an issue regarding the execution time of the optimization
     algorithm on the vehicle.
+  \item As mentioned Python library for optimization is not working properly.
+    This will have to be solved either by trying to fix the problems or by
+    using an alternative package to handle the optimization problems. More
+    documentation to be provided.
 \end{itemize}
 
 
 \section{To do}
 
-%\begin{itemize}
-%\end{itemize}
+\begin{itemize}
+  \item Measure sampling time from Mocap. It is accounted as the difference
+    between two time stamps. In order to read and deliver this data a new field
+    in the message that sends pose and orientation has to be created. Some
+    difficulties with ROS have to be overcome.
+
+  \item centerline pid testing postponed due to lidar ethernet adapter outage.
+    Although it is reported to be fixed, the current ongoing tasks were not
+    interrupted for the purpose.
+
+  \item Emergency stop. Already implemented in provided code but does not
+    always work.
+
+  \item Prototyping of dynamic model in matlab.
+
+  \item Project Review 1. During next team meeting the updated review will
+    be discussed.
+
+\end{itemize}
+
 
 \section{Misc.}
 
