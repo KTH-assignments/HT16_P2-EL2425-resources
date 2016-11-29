@@ -240,22 +240,28 @@ where
 However, states $x$ and $v$ cannot be measured under our configuration, since
 no SLAM module is employed and no encoders are mounted on the wheels of the
 vehicle. Hence, the model has to be reduced, while now the velocity will be
-constant and set to $v_0$. The new system matrices and the new states are
-modified as
+constant and set to $v_0$. (Hence the input throttle also needs to be excluded
+as an input). Nevertheless, state $x$ needs to be included in the
+model even if it is not possible to measure it due to the formulation of the
+problem in terms of the MPC framework: the reference of the vehicle in terms
+of $x$ needs to be (practical) infinity in order for it to keep moving along
+the lane. The new system matrices and the new states are modified as
 
 \begin{equation}
   A =
   \begin{bmatrix}
-    1 & T_s v_0 cos\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
-    0 & 1
+    1 & 0 & -T_s v_k sin\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 1 & T_s v_k cos\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 0 & 1
   \end{bmatrix}
 \end{equation}
 
 \begin{equation}
   B =
   \begin{bmatrix}
-    0 & T_s v_0 cos\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
-    0 & \dfrac{T_s v_0}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_{k-1}\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+    -T_s v_k sin\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    T_s v_k cos\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s v_k}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_{k-1}\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
   \end{bmatrix}
 \end{equation}
 
@@ -265,13 +271,13 @@ the model being
   s_{k+1} = A s_k + B u_k,
   s_k=
   \begin{bmatrix}
-    v_{k} \\
+    x_{k} \\
+    y_{k} \\
     \psi_{k}
   \end{bmatrix},
   u_k=
   \begin{bmatrix}
-    v_{i,k} \\
-    \delta_{k}
+    \delta_{k}\\
   \end{bmatrix}
 \end{equation}
 
@@ -284,9 +290,8 @@ We can now form the optimization problem to be solved at time step $t$ as
 \begin{align}
   \text{minimize }    & \sum\limits_{k=0}^{N-1} (s_k - s_{ref})^T Q (s_k - s_{ref}) + u_k^T R u_k + (s_N-s_{ref})^T Q_f x_(s_N-s_{ref}) \\
   \text{subject to }  & s_{k+1} = A s_k + B u_k \\
-                      & u_{i}^{min} \leq u_{i,k} \leq u_{i}^{max} \\
                       & \delta^{min} \leq \delta_k \leq \delta^{max} \\
-                      & s_0 = (y_t, \psi_t) \equiv (OC, \phi)\\
-                      & s_{ref} = (0,0)\\
+                      & s_0 = (x_t, y_t, \psi_t) \equiv (0, OC, \phi)\\
+                      & s_{ref} = (x^{max}, 0, 0)\\
                       & Q > 0, R > 0, Q_f > 0
 \end{align}
