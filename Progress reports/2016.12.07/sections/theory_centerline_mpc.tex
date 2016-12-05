@@ -1,0 +1,297 @@
+In figure \ref{fig:centerline_mpc}, the $x$ axis is fixed on the lane's
+centerline, while axis $y$ is perpendicular to it, facing the left boundary of
+the lane. The origin is at point
+$O$. The vehicle is represented by point $C$. The orientation of the vehicle
+with respect to the lane (the $x$-axis) is $\phi$. Given this configuration
+and two ranges from the range scan, at $-90^{\circ}$ and $90^{\circ}$ with
+respect to the longitudinal axis of the vehicle (denoted by $CR$ and
+$CL$ respectively), the objective is to find the distance $OC$ and the angle
+$\phi$ so that a MPC optimization problem can be solved with $OC$ and $\phi$
+acting as initial conditions. The only source of information is the lidar itself.
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc/centerline_mpc.tex}}
+  \caption{}
+  \label{fig:centerline_mpc}
+\end{figure}
+
+
+\textbf{Initial conditions} \\
+
+\textbf{Finding $\phi$}
+
+Here we can distinguish two cases, one where the vehicle is facing the right
+lane boundary and one where it is facing the left one. It is not obvious
+in this configuration where the vehicle is heading: the only available
+information so far is only the two ranges $CR$ and $CL$.
+
+In the first case, when the vehicle is on the right semilane, $CL-CR > 0$.
+We retrieve the minimum distance from the range scan available at time $t$,
+and denote the point which corresponds to this distance with $M$. The angle
+between point $M$ and the longitudinal axis of the vehicle is denoted with
+$\alpha$. In order to find this angle, we can exploit the fact that each ray
+of the scan is separated from the next by $res$ degrees, while all of them
+are stored in an array sequentially, in an anti-clockwise manner. In the case
+of the \texttt{HOKUYO-UST-10LX-LASER}, the angular resolution is
+$res=0.45^{\circ}$, and the starting angle is $-135^{\circ}$ with respect to the
+longitudinal axis of the vehicle. This means that we can retrieve the angle
+$\alpha$ by first calculating the number of indices between the one that
+corresponds to the ray with the minimum range and the one that corresponds
+to $+135^{\circ}$ (which in our case is $135 / 0.25 = 540$) with regard to the
+laser's system of reference, and then by multiplying this number $\Delta i$ by
+the angular resolution $res$. Hence, $\alpha = 0.25 \times \Delta i$.
+
+At this point we do not know whether the vehicle is pointing to the
+left or to the right lane boundary. However, we can determine the sign and the
+magnitude of the orientation of the vehicle with respect to the orientation of
+the lane by examining the sign of the difference $\alpha - 90^{\circ}$:
+if it is negative, the vehicle is pointing towards the right boundary lane,
+if it is positive, towards the left. Furthermore, we can now
+calculate the magnitude of the orientation of the vehicle as the difference
+$|\alpha - 90^{\circ}|$, as shown in figure \ref{fig:circular_mpc_rotation_car_at_right_side}.
+In conclusion, if the car is located at the right semilane its orientation with
+respect to the orientation of the lane is
+
+$$\phi = sign(CL-CR)(\alpha - 90)$$
+
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc/rotation_car_at_right_side.tex}}
+  \caption{The vehicle is at the right side of the lane.}
+  \label{fig:circular_mpc_rotation_car_at_right_side}
+\end{figure}
+
+In the second case, when the vehicle is on the left semilane, $CL-CR < 0$.
+We retrieve the minimum distance from the range scan available at time $t$,
+and denote the point which corresponds to this distance with $M$. The angle
+between point $M$ and the longitudinal axis of the vehicle is denoted with
+$\alpha$. In order to find this angle, we can exploit the fact that each ray
+of the scan is separated from the next by $res$ degrees, while all of them
+are stored in an array sequentially, in an anti-clockwise manner. In the case
+of the \texttt{HOKUYO-UST-10LX-LASER}, the angular resolution is
+$res=0.45^{\circ}$, and the starting angle is $-135^{\circ}$ with respect to the
+longitudinal axis of the vehicle. This means that we can retrieve the angle
+$\alpha$ by first calculating the number of indices between the one that
+corresponds to the ray with the minimum range and the one that corresponds
+to $+225^{\circ}$ (which in our case is $225 / 0.25 = 900$) with regard to
+the laser's system of reference, and then by multiplying this number
+$\Delta i$ by the angular resolution $res$. Hence,
+$\alpha = 0.25 \times \Delta i$.
+
+At this point we do not know whether the vehicle is pointing to the
+left or to the right lane boundary. However, we can determine the sign and the
+magnitude of the orientation of the vehicle with respect to the orientation of
+the lane by examining the sign of the difference $\alpha - 90^{\circ}$:
+if it is positive, the vehicle is pointing towards the right boundary lane,
+if it is negative, towards the left. Furthermore, we can now
+calculate the magnitude of the orientation of the vehicle as the difference
+$|\alpha - 90^{\circ}|$, as shown in figure \ref{fig:circular_mpc_rotation_car_at_left_side}.
+In conclusion, if the car is located at the left semilane its orientation with
+respect to the orientation of the lane is
+
+$$\phi = sign(CL-CR)(\alpha - 90)$$
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_mpc/rotation_car_at_left_side.tex}}
+  \caption{The vehicle is at the left side of the lane.}
+  \label{fig:circular_mpc_rotation_car_at_left_side}
+\end{figure}
+
+
+In conclusion, angle $\phi = sign(CL-CR) (\alpha-90)$, where angle $\alpha$
+is calculated as a (weighted by angular resolution) difference between the
+indices of the minimum range provided by the range scan at time $t$ and that
+of the minimum range between $CL$ and $CR$. \\
+
+
+\textbf{Finding $OC$}
+
+Looking at figure \ref{fig:centerline_mpc} we can see that
+
+\begin{align}
+  L_o O + OC + CR_o &= W = CR_o + CL_o
+\end{align}
+
+where $W$ is the width of the lane. But $L_o O = \dfrac{W}{2}$ hence
+
+\begin{align}
+  OC + CR_o &= \dfrac{1}{2}(CR_o + CL_o) \Leftrightarrow \\
+  OC &= \dfrac{1}{2}(CL_o - CR_o)
+\end{align}
+
+But $CL_o = CL sin\lambda$ and $CR_o = CR cos\phi$, hence
+
+
+\begin{align}
+  OC &= \dfrac{1}{2}(CL sin\lambda - CR cos\phi)
+\end{align}
+
+From triangle LCF in the case where the vehicle is facing the left lane boundary,
+we note that $\phi + \lambda + \dfrac{\pi}{2} = \pi$,
+hence $\lambda = \dfrac{\pi}{2} - \phi$. Then, we conclude that
+
+\begin{align}
+  OC &= \dfrac{1}{2}(CL - CR) cos\phi
+\end{align}
+
+
+
+
+\textbf{Obtaining the linearized kinematic model}
+
+The model constitutes the equations of motion of the vehicle, and has four
+states ($x$, $y$, $v$ and $\psi$) and two inputs ($v_i$ and $\delta$). The
+equations of the vehicle's motion that are relevant here are
+
+\begin{align}
+  \dot{x} &= v cos(\psi + \beta) \\
+  \dot{y} &= v sin(\psi + \beta) \\
+  \dot{v} &= \dfrac{v_i - v}{\tau} \\
+  \dot{\psi} &= \dfrac{v}{l_r} sin\beta
+\end{align}
+
+Sampling with a sampling time of $T_s$ gives
+
+\begin{align}
+  x_{k+1} &= x_{k} + T_s v_k cos(\psi_k + \beta_k) \\
+  y_{k+1} &= y_{k} + T_s v_k sin(\psi_k + \beta_k) \\
+  v_{k+1} &= v_{k} + \dfrac{T_s}{\tau} (v_{i,k} - v_{k}) \\
+  \psi_{k+1} &= \psi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
+\end{align}
+
+where
+
+\begin{align}
+  \beta_k = tan^{-1}\Big(\dfrac{l_r}{l_r + l_f} tan\delta_{k-1}\Big)
+\end{align}
+
+
+Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
+$t=k$ around the state $\psi = \phi$, $v = v_k$ and
+$\delta = \delta_{k-1}$ ($\delta_k$ is to be determined at time $k$):
+
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & 0 & T_s cos(\phi + \beta_k) & -T_s v_k sin(\phi + \beta_k) \\\\
+    0 & 1 & T_s sin(\phi + \beta_k) & T_s v_k cos(\phi + \beta_k) \\\\
+    0 & 0 & 1-\dfrac{T_s}{\tau} & 0 \\\\
+    0 & 0 & \dfrac{T_s}{l_r}sin(\beta_k) & 1
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+  A =
+  \begin{bmatrix}
+    1 & 0 & T_s cos\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) & -T_s v_k sin\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 1 & T_s sin\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) & T_s v_k cos\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 0 & 1-\dfrac{T_s}{\tau} & 0 \\\\
+    0 & 0 & \dfrac{T_s}{l_r}sin(tan^{-1} (l_q tan\delta_{k-1})) & 1
+  \end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    0 & -T_s v_k sin(\phi + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    0 & T_s v_k cos(\phi + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s}{\tau} v_k & 0 \\
+    0 & \dfrac{T_s v_k}{l_r} cos(\beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}
+\end{equation}
+\begin{equation}
+  B =
+  \begin{bmatrix}
+    0 & -T_s v_k sin\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    0 & T_s v_k cos\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s}{\tau} v_k & 0 \\
+    0 & \dfrac{T_s v_k}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_{k-1}\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}
+\end{equation}
+
+
+where $l_q = \dfrac{l_r}{l_r + l_f}$
+
+
+Now we can express the linear model as
+
+\begin{align}
+  s_{k+1} = A s_k + B u_k
+\end{align}
+
+where
+
+\begin{equation}
+  s_k=
+  \begin{bmatrix}
+    x_{k} \\
+    y_{k} \\
+    v_{k} \\
+    \psi_{k}
+  \end{bmatrix},
+  u_k=
+  \begin{bmatrix}
+    v_{i,k} \\
+    \delta_{k}
+  \end{bmatrix}
+\end{equation}
+
+
+However, states $x$ and $v$ cannot be measured under our configuration, since
+no SLAM module is employed and no encoders are mounted on the wheels of the
+vehicle. Hence, the model has to be reduced, while now the velocity will be
+constant and set to $v_0$. (Hence the input throttle also needs to be excluded
+as an input). Nevertheless, state $x$ needs to be included in the
+model even if it is not possible to measure it due to the formulation of the
+problem in terms of the MPC framework: the reference of the vehicle in terms
+of $x$ needs to be (practical) infinity in order for it to keep moving along
+the lane. The new system matrices and the new states are modified as
+
+\begin{equation}
+  A =
+  \begin{bmatrix}
+    1 & 0 & -T_s v_k sin\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 1 & T_s v_k cos\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 0 & 1
+  \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+  B =
+  \begin{bmatrix}
+    -T_s v_k sin\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    T_s v_k cos\Big(\phi + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s v_k}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_{k-1}\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}
+\end{equation}
+
+the model being
+
+\begin{equation}
+  s_{k+1} = A s_k + B u_k,
+  s_k=
+  \begin{bmatrix}
+    x_{k} \\
+    y_{k} \\
+    \psi_{k}
+  \end{bmatrix},
+  u_k=
+  \begin{bmatrix}
+    \delta_{k}\\
+  \end{bmatrix}
+\end{equation}
+
+
+
+\textbf{Stating the optimization problem}
+
+We can now form the optimization problem to be solved at time step $t$ as
+
+\begin{align}
+  \text{minimize }    & \sum\limits_{k=0}^{N-1} (s_k - s_{ref})^T Q (s_k - s_{ref}) + u_k^T R u_k + (s_N-s_{ref})^T Q_f x_(s_N-s_{ref}) \\
+  \text{subject to }  & s_{k+1} = A s_k + B u_k \\
+                      & \delta^{min} \leq \delta_k \leq \delta^{max} \\
+                      & s_0 = (x_t, y_t, \psi_t) \equiv (0, OC, \phi)\\
+                      & s_{ref} = (x^{max}, 0, 0)\\
+                      & Q > 0, R > 0, Q_f > 0
+\end{align}

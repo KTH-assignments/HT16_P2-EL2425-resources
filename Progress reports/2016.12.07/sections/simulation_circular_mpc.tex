@@ -1,0 +1,28 @@
+The prototyping is being done in matlab. Figure \ref{fig:circular_mpc_traj}
+shows the reference trajectory in blue and the trajectory of the vehicle in
+red. Figure \ref{fig:circular_mpc_vel} shows the reference velocity of the
+vehicle in blue and the velocity of the vehicle in red.
+
+These results act purely as a proof of concept. Tuning of the weights on the
+states and the inputs is not an easy task, and it will have to be performed
+primarily experimentally.
+
+\noindent\makebox[\linewidth][c]{%
+\begin{minipage}{\linewidth}
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.7}{\input{./figures/circular_mpc_trajectory.tex}}
+      \caption{}
+      \label{fig:circular_mpc_traj}
+    \end{figure}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.7}{\input{./figures/circular_mpc_velocity.tex}}
+      \caption{}
+      \label{fig:circular_mpc_vel}
+    \end{figure}
+  \end{minipage}
+\end{minipage}
+}

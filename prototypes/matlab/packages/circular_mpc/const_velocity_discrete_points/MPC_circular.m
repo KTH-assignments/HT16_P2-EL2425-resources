@@ -13,16 +13,17 @@ params.l_r = 0.16;
 params.l_q = params.l_r / (params.l_r + params.l_f);
 
 % Control Parameters
-params.N = 5;   % The horizon
-params.Q = [0.50 0 0; 0 0.50 0; 0 0 0.01];
-params.R = 0.001;
+params.N = 20;   % The horizon
+params.Q = [1 0 0; 0 1 0; 0 0 0.01];
+params.Q_N = [1 0 0; 0 1 0; 0 0 1];
+params.R = 1;
 
 %% Initial conditions for the state of the vehicle
        
-params.x0 = -0.2635;  
-params.y0 = -1.5844;  
+params.x0 = 1.5;  
+params.y0 = 0;  
 params.v0 = 1;
-params.psi0 = 6.0107;
+params.psi0 = pi/2;
 
 %% Number of iterations
 params.N_max = 3000;
@@ -103,11 +104,11 @@ if (k > 1)
 end
 
 %%   Ensure stability
-%   [params.Qf,~,~,err] = dare(params.linear_A, params.linear_B, params.Q, params.R);
-%   if (err == -1 || err == -2)
-%     params.Qf = params.Q;
-%   end
-%     
+  [params.Qf,~,~,err] = dare(params.linear_A, params.linear_B, params.Q, params.R);
+  if (err == -1 || err == -2)
+    params.Qf = params.Q;
+  end
+    
   yalmip('clear')
 
   % The predicted state and control variables
@@ -120,26 +121,42 @@ end
 
   for i = 1:params.N
     
-    J = J + ...
-      (z_mpc(i,:)-refs(i,:)) * params.Q * (z_mpc(i,:)-refs(i,:))' +  ...
-      u_mpc(i,:) * params.R * u_mpc(i,:)';
+    if i < params.N
+      J = J + ...
+        (z_mpc(i,:)-refs(i,:)) * params.Q * (z_mpc(i,:)-refs(i,:))' +  ...
+        u_mpc(i,:) * params.R * u_mpc(i,:)';
 
 
-    % Model contraints
-    constraints = [constraints, ...
-      z_mpc(i+1,:)' == params.linear_A * z_mpc(i,:)' + params.linear_B * u_mpc(i,:)'];
+      % Model contraints
+      constraints = [constraints, ...
+        z_mpc(i+1,:)' == params.linear_A * z_mpc(i,:)' + params.linear_B * u_mpc(i,:)'];
 
-    % Input constraints
-    constraints = [constraints, ...
-      -pi/3 <= u_mpc(i) <= pi/3];
+      % Input constraints
+      constraints = [constraints, ...
+        -pi/3 <= u_mpc(i) <= pi/3];
+    else
+      J = J + ...
+        (z_mpc(i,:)-refs(i,:)) * params.Q_N * (z_mpc(i,:)-refs(i,:))' +  ...
+        u_mpc(i,:) * params.R * u_mpc(i,:)';
+
+
+      % Model contraints
+      constraints = [constraints, ...
+        z_mpc(i+1,:)' == params.linear_A * z_mpc(i,:)' + params.linear_B * u_mpc(i,:)'];
+
+      % Input constraints
+      constraints = [constraints, ...
+        -pi/3 <= u_mpc(i) <= pi/3];
+    end
   end
+
   
   %  terminal cost
-%   J = J + (z_mpc(params.N+1, :) - refs(params.N+1,:)) * params.Qf * (z_mpc(params.N+1, :)-refs(params.N+1,:))';
+  J = J + (z_mpc(params.N+1, :) - refs(params.N+1,:)) * params.Qf * (z_mpc(params.N+1, :)-refs(params.N+1,:))';
 
   % terminal constraints?
-%     constraints = [constraints, ...
-%        z_mpc(params.N+1, 3) - refs(params.N+1, 3) == 0];
+    constraints = [constraints, ...
+       z_mpc(params.N+1, 3) - refs(params.N+1, 3) == 0];
         
   assign(z_mpc(1,:), z(k,:));
 
@@ -155,17 +172,15 @@ end
   % simulate the vehicle
   z(k+1,:) = car_sim_circular(z(k,:), u(k), params);
 %   z(k+1,3) = z(k+1,3) + 2*pi*fix(round(180/(2*pi)*mov_ref(k,3))/180) - 2*pi*fix(round(180/(2*pi)*z(k,3))/180);
-  
- 180/pi * (z(k+1,3)-refs(1,3))
-  
-  
+    
 %   figure
   plot(circ(:,1), circ(:,2))
   hold on
   plot(z(2:end,1), z(2:end,2));
-  plot(refs(:,1), refs(:,2), '*')
+  plot(refs(:,1), refs(:,2), '*', 'Color','b')
   plot(z(k,1), z(k,2), '*', 'Color', 'r')
   ref_l = refline(tan(mov_ref(k,3)), -tan(mov_ref(k,3))*mov_ref(k,1)+mov_ref(k,2));
+  set(ref_l,'Color','b')
   z_l = refline(tan(z(k,3)), -tan(z(k,3))*z(k,1)+z(k,2));
   set(z_l,'Color','r')
   axis equal
