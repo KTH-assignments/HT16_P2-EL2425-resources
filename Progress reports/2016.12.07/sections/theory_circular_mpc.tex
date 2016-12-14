@@ -78,11 +78,12 @@ refer to.
 
 The next reference points depend on the velocity of the vehicle. Since its
 velocity is constant, we know from elementary physics that $v = \omega R$,
-which means that $\omega = v / R$, which is known. If we denote with $\theta_T$
-the angle that the line passing through $O'$ and $T$ makes with the $x$ axis,
-with $\theta_1$ the angle that the line passing through $O'$ and the first
-reference point after point $T$ makes with the $x$ axis, and $T_s$ the sampling
-time of the pose of the vehicle, then
+which means that $\omega = v / R$, which is known, since the radius of the
+circle is set by us in advance, and the velocity of the vehicle is measurable.
+If we denote with $\theta_T$ the angle that the line passing through $O'$
+and $T$ makes with the $x$ axis, with $\theta_1$ the angle that the line
+passing through $O'$ and the first reference point after point $T$ makes with
+the $x$ axis, and $T_s$ the sampling time of the pose of the vehicle, then
 
 \begin{align}
   \omega &= \dfrac{\Delta \theta}{\Delta t} = \dfrac{\theta_1 - \theta_T}{T_s} \Leftrightarrow \\
@@ -154,7 +155,7 @@ $\delta = \delta_{k-1}$ ($\delta_k$ is to be determined at time $k$):
     1 & 0 & -T_s v_k sin(\psi_k + \beta_k) \\\\
     0 & 1 & T_s v_k cos(\psi_k + \beta_k) \\\\
     0 & 0 & 1
-  \end{bmatrix}
+  \end{bmatrix}, \text{or}
 \end{equation}
 \begin{equation}
   A =
@@ -172,7 +173,7 @@ $\delta = \delta_{k-1}$ ($\delta_k$ is to be determined at time $k$):
     -T_s v_k sin(\psi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
     T_s v_k cos(\psi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
     \dfrac{T_s v_k}{l_r} cos(\beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
-  \end{bmatrix}
+  \end{bmatrix}, \text{or}
 \end{equation}
 \begin{equation}
   B =
@@ -185,7 +186,6 @@ $\delta = \delta_{k-1}$ ($\delta_k$ is to be determined at time $k$):
 
 
 where $l_q = \dfrac{l_r}{l_r + l_f}$
-
 
 Now we can express the linear model as
 
@@ -211,6 +211,16 @@ and
 \end{equation}
 
 
+However, here there is another option. We can keep the A and B matrices
+constant during the solution of the optimization problem, which means that
+only one linearization is made (around the current state of the vehicle),
+or we can solve the problem once with these matrices, extract the sequence of
+predicted states, and linearize around them. This will result in $N-1$ new
+linearizations around each predicted state of the vehicle, and hence $N-1$
+additional $A_t$ matrices. In the same spirit, we linearize around the
+corresponding optimal input $N-1$ times in total, and we obtain $N-1$
+additional $B_t$ matrices.
+
 
 \subsubsection{Stating the optimization problem}
 
@@ -218,8 +228,16 @@ We can now form the optimization problem to be solved at time $t$ as
 
 \begin{align}
   \text{minimize }    & \sum\limits_{k=0}^{N-1} (s_k - s_k^{ref})^T Q (s_k - s_k^{ref}) + u_k^T R u_k \\
-  \text{subject to }  & s_{k+1} = A s_k + B u_k, \text{ where } s_k = [x_k, y_k, \psi_k]^T, u_k = \delta_k \\
+  \text{subject to }  & s_{k+1} = A_k s_k + B_k u_k, \text{ where } s_k = [x_k, y_k, \psi_k]^T, u_k = \delta_k \\
                       & \delta^{min} \leq \delta_k \leq \delta^{max} \\
                       & s_k^{ref} = (x_k^{ref}, y_k^{ref}, \psi_k^{ref}) \\
                       & s_0 = (x_t, y_t, \psi_t)
 \end{align}
+
+where $A_k$ or $B_k$ are the Jacobians obtained via linearization around
+the state of the vehicle at time $t$, in which case they are constant across all
+$k$'s, ($A_k = A$, $B_k = B$, $\forall k$) and the problem is solved only
+once per sampling time; or they are obtained by linearizing around the
+predicted state of the vehicle, in which case the problem is solved once
+with $A_k = A$, $B_k = B$, and one final time with the variant-time A and B
+matrices.
