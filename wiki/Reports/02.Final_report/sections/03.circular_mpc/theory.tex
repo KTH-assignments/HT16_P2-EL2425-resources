@@ -1,0 +1,243 @@
+In figure \ref{fig:circular_mpc}, the vehicle $C$, whose velocity is constant
+and denoted by $v$, is to track a circle whose center is $O'$ and whose
+radius is $R$. Its orientation relative to the global coordinate system is
+$\psi$. The vehicle's coordinates are $(x_c, y_c)$. The circular trajectory
+is known a priori, and is comprised of a set of ordered points who encode
+the $x$-wise, $y$-wise and $yaw$-wise states that the vehicle ought to have,
+that is, each point on the circle serves as a reference to the vehicle. In terms
+of yaw angle, the longitudinal axis of the vehicle ought to always be tangent
+to the circle.
+
+
+\begin{figure}[H]\centering
+  \scalebox{0.7}{\input{./figures/circular_mpc/circular_mpc.tex}}
+  \caption{}
+  \label{fig:circular_mpc}
+\end{figure}
+
+In this setting, since an optimization problem will have to be solved at each
+time instant $t$, the first thing that needs to be identified is the reference
+pose of the vehicle at each time instant $t$. More precisely, since the
+objective is the minimization of the deviation of the vehicle's trajectory
+from the circular one, and the framework is that of MPC, we need to identify
+the sequence of points on the circle that shall act as references while
+iterating through the prediction equations of the linearized model of the
+vehicle's behaviour. This task is divided into two sub-tasks: first, we
+identify the point $T$ of the circle that lies on the line that is tangent to
+the circle and that passes through the position of the vehicle. When this
+point is known, the sequence of $N-1$ reference poses can be calculated,
+given knowledge of the circle's radius and the vehicle's velocity. $N$ is the
+horizon length. The following two sections illustrate the procedures by
+which the $N$ reference poses are identified.
+
+\subsubsection{Finding $T$}
+
+Here, we are not concerned with the orientation of the vehicle; its coordinates
+will only be used as a point to identify the tangent that passes through
+the position of the vehicle.
+
+
+\begin{figure}[H]\centering
+  \scalebox{0.8}{\input{./figures/circular_mpc/circular_mpc_tan.tex}}
+  \caption{}
+  \label{fig:circular_mpc_tan}
+\end{figure}
+
+
+In triangle $TO'C$, $\angle O'TC$ is right, and
+
+\begin{align}
+  \alpha = sin^{-1} \dfrac{R}{O'C}
+\end{align}
+
+while
+
+\begin{align}
+  \beta = tan^{-1} \dfrac{y_c - y_{O'}}{x_c - x_{O'}}
+\end{align}
+
+Point $T$ is then rudimentary to find: it is the point that lies on the
+circle and is found while rotating by $\beta + \dfrac{\pi}{2} - \alpha$ from the
+$x$ axis. The coordinates of point $T$ are
+
+\begin{align}
+  x_T &= x_{O'} + R cos\theta_T \\
+  y_T &= y_{O'} + R sin\theta_T \\
+  \theta_T &= \beta + \dfrac{\pi}{2} - \alpha \\
+\end{align}
+
+The same reasoning applies to when the vehicle is located at every other
+quadrant. The pose that the vehicle ought to have at point $T$ of the circle
+can now be retrieved from the given set of poses. Point $T$ shall serve as the
+first reference for the vehicle in the statement of the optimization problem,
+that is, $s_T = [x_T, y_T, \psi_T]^T = s_0^{ref}$. The next task is now to
+find the next $N-1$ reference poses in the circle that the vehicle ought to
+refer to.
+
+\subsubsection{Beyond point $T$}
+
+The next reference points depend on the velocity of the vehicle. Since its
+velocity is constant, we know from elementary physics that $v = \omega R$,
+which means that $\omega = v / R$, which is known, since the radius of the
+circle is set by us in advance, and the velocity of the vehicle is measurable.
+If we denote with $\theta_T$ the angle that the line passing through $O'$
+and $T$ makes with the $x$ axis, with $\theta_1$ the angle that the line
+passing through $O'$ and the first reference point after point $T$ makes with
+the $x$ axis, and $T_s$ the sampling time of the pose of the vehicle, then
+
+\begin{align}
+  \omega &= \dfrac{\Delta \theta}{\Delta t} = \dfrac{\theta_1 - \theta_T}{T_s} \Leftrightarrow \\
+  \theta_1 &= \theta_T + T_s \dfrac{v}{R} \\
+\end{align}
+
+In general, the $k$-th point in the sequence of the $N-1$ reference points will
+lie at an angle of
+
+\begin{align}
+  \theta_k &= \theta_T + k T_s \dfrac{v}{R}\\
+\end{align}
+
+The coordinates of the $k$-th reference point ($1 \leq k \leq N-1$) are
+
+\begin{align}
+  x_k^{ref} &= x_{O'} + R cos\theta_k \\
+  y_k^{ref} &= y_{O'} + R sin\theta_k \\
+\end{align}
+
+The pose that the vehicle ought to have at each point can be retrieved again
+from the set of given poses.
+
+
+\begin{figure}[H]\centering
+  \scalebox{0.8}{\input{./figures/circular_mpc/circular_mpc_tan_and_refs.tex}}
+  \caption{}
+  \label{fig:circular_mpc_tan_and_refs}
+\end{figure}
+
+
+
+
+\subsubsection{Obtaining the linearized kinematic model}
+
+The model constitutes the equations of motion of the vehicle, and has three
+states ($x$, $y$, and $\psi$) and one input ($\delta$), since we assume a
+constant velocity. The equations of the vehicle's motion that are relevant here
+are
+
+\begin{align}
+  \dot{x} &= v cos(\psi + \beta) \\
+  \dot{y} &= v sin(\psi + \beta) \\
+  \dot{\psi} &= \dfrac{v}{l_r} sin\beta
+\end{align}
+
+Sampling with a sampling time of $T_s$ gives
+
+\begin{align}
+  x_{k+1} &= x_{k} + T_s v_k cos(\psi_k + \beta_k) \\
+  y_{k+1} &= y_{k} + T_s v_k sin(\psi_k + \beta_k) \\
+  \psi_{k+1} &= \psi_{k} + T_s \dfrac{v}{l_r} sin\beta_k
+\end{align}
+
+where
+
+\begin{align}
+  \beta_k = tan^{-1}\Big(\dfrac{l_r}{l_r + l_f} tan\delta_{k-1}\Big)
+\end{align}
+
+
+Forming the Jacobians for matrices $A$, $B$ and evaluating them at time
+$t=k$ around the current state $\psi = \psi_k$, and
+$\delta = \delta_{k-1}$ ($\delta_k$ is to be determined at time $k$):
+
+\begin{equation}
+ A =
+  \begin{bmatrix}
+    1 & 0 & -T_s v_k sin(\psi_k + \beta_k) \\\\
+    0 & 1 & T_s v_k cos(\psi_k + \beta_k) \\\\
+    0 & 0 & 1
+  \end{bmatrix}, \text{or}
+\end{equation}
+\begin{equation}
+  A =
+  \begin{bmatrix}
+    1 & 0 & -T_s v_k sin\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 1 & T_s v_k cos\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \\\\
+    0 & 0 & 1
+  \end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+ B =
+  \begin{bmatrix}
+    -T_s v_k sin(\psi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    T_s v_k cos(\psi_k + \beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s v_k}{l_r} cos(\beta_k) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}, \text{or}
+\end{equation}
+\begin{equation}
+  B =
+  \begin{bmatrix}
+    -T_s v_k sin\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    T_s v_k cos\Big(\psi_k + tan^{-1} (l_q tan\delta_{k-1})\Big) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}} \\
+    \dfrac{T_s v_k}{l_r} cos\Bigg(tan^{-1} \Big(l_q tan\delta_{k-1}\Big)\Bigg) \dfrac{l_q}{l_q^2 sin^2\delta_{k-1} + cos^2\delta_{k-1}}
+  \end{bmatrix}
+\end{equation}
+
+
+where $l_q = \dfrac{l_r}{l_r + l_f}$
+
+Now we can express the linear model as
+
+\begin{align}
+  s_{k+1} = A s_k + B u_k
+\end{align}
+
+where
+
+\begin{equation}
+  s_k=
+  \begin{bmatrix}
+    x_{k} \\
+    y_{k} \\
+    \psi_{k}
+  \end{bmatrix}
+\end{equation}
+
+and
+
+\begin{equation}
+  u_k= \delta_{k}
+\end{equation}
+
+
+However, here there is another option. We can keep the A and B matrices
+constant during the solution of the optimization problem, which means that
+only one linearization is made (around the current state of the vehicle),
+or we can solve the problem once with these matrices, extract the sequence of
+predicted states, and linearize around them. This will result in $N-1$ new
+linearizations around each predicted state of the vehicle, and hence $N-1$
+additional $A_t$ matrices. In the same spirit, we linearize around the
+corresponding optimal input $N-1$ times in total, and we obtain $N-1$
+additional $B_t$ matrices.
+
+
+\subsubsection{Stating the optimization problem}
+
+We can now form the optimization problem to be solved at time $t$ as
+
+\begin{align}
+  \text{minimize }    & \sum\limits_{k=0}^{N-1} (s_k - s_k^{ref})^T Q (s_k - s_k^{ref}) + u_k^T R u_k \\
+  \text{subject to }  & s_{k+1} = A_k s_k + B_k u_k, \text{ where } s_k = [x_k, y_k, \psi_k]^T, u_k = \delta_k \\
+                      & \delta^{min} \leq \delta_k \leq \delta^{max} \\
+                      & s_k^{ref} = (x_k^{ref}, y_k^{ref}, \psi_k^{ref}) \\
+                      & s_0 = (x_t, y_t, \psi_t)
+\end{align}
+
+where $A_k$ or $B_k$ are the Jacobians obtained via linearization around
+the state of the vehicle at time $t$, in which case they are constant across all
+$k$'s, ($A_k = A$, $B_k = B$, $\forall k$) and the problem is solved only
+once per sampling time; or they are obtained by linearizing around the
+predicted state of the vehicle, in which case the problem is solved once
+with $A_k = A$, $B_k = B$, and one final time with the variant-time A and B
+matrices.

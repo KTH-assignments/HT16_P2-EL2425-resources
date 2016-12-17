@@ -1,0 +1,217 @@
+The problem can be decomposed into two separate and independent
+components involving a translation and a rotation of the vehicle.
+
+\subsubsection{Translational component}
+
+We assume that the pose of the vehicle at time $t$ is
+$(x_c, y_c, v_c, \psi_v)$ and that two range scans at $+90^\circ$ and
+$-90^\circ$ with respect to the longitudinal axis of the
+vehicle are available, which are denoted as $CL$ and $CR$ respectively. Also,
+in figure \ref{fig:centerline_pid_translation}, point $O'$ is a future
+reference and the angle $\lambda$ is the angle that the vehicle should
+make in order to reach $O'$ in a future moment.
+
+Then, since $CL + CR = L = OL + OR$ and $CL = OC + OL$, this means that
+
+\begin{equation}
+  OC = OR - CR = \dfrac{L}{2} - CR = \dfrac{CL + CR}{2} - CR = \dfrac{CL-CR}{2}
+\end{equation}
+where $L$ is the width of the lane whose centerline the vehicle is to track.
+
+Furthermore, in the $CC'O'$ triangle
+
+\begin{align}
+  \text{tan}\lambda &= \dfrac{O'C'}{CC'} = \dfrac{OC}{CC'} = \dfrac{CL-CR}{2CC'} \\
+  \lambda &= \text{tan}^{-1}\dfrac{CL-CR}{2CC'}
+\end{align}
+
+The length $CC'$ is unknown and can be set beforehand. Its magnitude
+will determine the vehicle's rate of convergence to the centerline of the
+lane.
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_pid_translation.tex}}
+  \caption{The vehicle's heading angle is equal to that of the lane's.
+    However, its position is off track.}
+  \label{fig:centerline_pid_translation}
+\end{figure}
+
+The angular error of the translational component is then
+
+\begin{align}
+  e_t &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'}
+\end{align}
+
+where the minus sign is introduced due to the
+convention that a left turn is assigned a negative value.
+
+\subsubsection{Rotational component}
+
+The rotational component problem can be solved in two ways, of which the
+second is more robust than the first.
+
+In the first solution, we assume that the the pose of the vehicle at time $t$ as
+$(x_c, y_c, v_c, \psi_v)$ and that three range scans
+at $+90^\circ$, $0^\circ$ and $-90^\circ$ with respect to the
+longitudinal axis of the vehicle are available, which are denoted as
+$CL$, $CF$ and $CR$ respectively.
+
+Here we can distinguish two cases: one where the vehicle is facing the right
+lane boundary and one where it is facing the left one. It is not obvious
+in this configuration where the vehicle is heading: the only available
+information so far is only the three range scans.
+
+In the first case, the heading angle error is
+
+\begin{align}
+  \phi = \text{tan}^{-1}\dfrac{CR}{CF}
+\end{align}
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_pid_rotation_negative.tex}}
+  \caption{The vehicle's position and its reference are equal. However,
+    the vehicle's heading is off track. Its heading is towards the right
+    lane boundary.}
+  \label{}
+\end{figure}
+
+The rotational error of the vehicle in this case is
+
+\begin{align}
+  e_r &= -\text{tan}^{-1}\dfrac{CR}{CF}
+\end{align}
+
+therefore the overall angular error of the vehicle in this case is
+
+\begin{align}
+  e &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'} - \text{tan}^{-1}\dfrac{CR}{CF}
+\end{align}
+
+where the minus signs are introduced due to the
+convention that a left turn is assigned a negative value.
+
+
+In the second case, the heading angle error is
+
+\begin{align}
+  \phi = \text{tan}^{-1}\dfrac{CL}{CF}
+\end{align}
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_pid_rotation_positive.tex}}
+  \caption{The vehicle's position and its reference are equal. However,
+    the vehicle's heading is off track. Its heading is towards the left
+    lane boundary.}
+  \label{}
+\end{figure}
+
+The rotational error of the vehicle in this case is
+
+\begin{align}
+  e_r &= \text{tan}^{-1}\dfrac{CL}{CF}
+\end{align}
+
+therefore the overall angular error of the vehicle in this case is
+
+\begin{align}
+  e &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'} + \text{tan}^{-1}\dfrac{CL}{CF}
+\end{align}
+
+where the minus sign of the translational error is introduced due to the
+convention that a left turn is assigned a negative value.
+
+
+In order to deduce the correct value of $\phi$ ($-\tan^{-1}\dfrac{CR}{CF}$ or
+$\tan^{-1}\dfrac{CL}{CF}$) further ranges scans are needed. To this end,
+a difference between ranges around point $F$ is taken: starting at the
+right of $F$ and moving anti-clockwise, we calculate the difference between
+two range scans for a given angle between them. If its sign
+is negative then the vehicle is facing the right lane boundary; if not,
+it is facing the left lane boundary. This concept is depicted in figures
+\ref{fig:range_diff_positive} and  \ref{fig:range_diff_negative}.
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_range_differences_positive.tex}}
+  \caption{$CF_0 > CF > CF_1$, hence $CF_0 - CF_1 > 0$ and $\phi = tan^{-1} \dfrac{CL}{CF}$}
+  \label{fig:range_diff_positive}
+\end{figure}
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_range_differences_negative.tex}}
+  \caption{$CF_0 < CF < CF_1$, hence $CF_0 - CF_1 < 0$ and $\phi = -tan^{-1} \dfrac{CR}{CF}$}
+  \label{fig:range_diff_negative}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+In the second solution we assume that the the pose of the vehicle at time $t$ as
+$(x_c, y_c, v_c, \psi_v)$ and that \textit{two} range scans at $+90^\circ$
+and $-90^\circ$ with respect to the longitudinal axis of the vehicle are
+available, which are denoted as $CL$ and $CR$ respectively. Here, again we
+distinguish two cases, one where the vehicle is facing the right
+lane boundary and one where it is facing the left one. It is not obvious
+in this configuration where the vehicle is heading: the only available
+information so far is only the two ranges $CR$ and $CL$.
+
+We retrieve the \text{first} minimum distance from the range scan available at
+time $t$, and denote the point which corresponds to this distance with $M_0$. The
+angle between point $M_0$ and the longitudinal axis of the vehicle is denoted with
+$\alpha$. In order to find this angle, we can exploit the fact that each ray
+of the scan is separated from the next by $res$ degrees, while all of them
+are stored in an array sequentially, in an anti-clockwise manner. In the case
+of the \texttt{HOKUYO-UST-10LX-LASER}, the angular resolution is
+$res=0.45^{\circ}$, and the starting angle is $-135^{\circ}$ with respect to the
+longitudinal axis of the vehicle. This means that we can retrieve the angle
+$\alpha$ by first calculating the number of indices between the one that
+corresponds to the ray with the minimum range and the one that corresponds
+to $+135^{\circ}$ (which in our case is $135 / 0.25 = 540$) with regard to the
+laser's system of reference, and then by multiplying this number $\Delta i$ by
+the angular resolution $res$. Hence, $\alpha = 0.25 \times \Delta i$.
+
+
+\begin{figure}[H]\centering
+  \scalebox{1}{\input{./figures/centerline_pid_rotational_2.tex}}
+  \caption{}
+  \label{}
+\end{figure}
+
+At this point we do not know whether the vehicle is pointing to the
+left or to the right lane boundary yet. However, we can determine the sign and the
+magnitude of the orientation of the vehicle with respect to the orientation of
+the lane by examining the sign of the difference $\alpha - 90^{\circ}$:
+if it is negative, the vehicle is pointing towards the right boundary lane,
+if it is positive, towards the left. Furthermore, we can now
+calculate the magnitude of the orientation of the vehicle as the difference
+$|\alpha - 90^{\circ}|$, as shown in figure \ref{fig:circular_mpc_rotation_car_at_right_side}.
+In conclusion, when the car is located at the centerline, its orientation with
+respect to the orientation of the lane is
+
+$$\phi = \alpha - 90^{\circ}$$
+
+
+therefore the overall angular error of the vehicle in this case is
+
+\begin{align}
+  e &= -\text{tan}^{-1}\dfrac{CL-CR}{2CC'} + \alpha - 90
+\end{align}
+
+
+
+Since the input to the plant is in terms of angular displacement, this
+is in fact the error that the PID controller can include and utilize in
+order to determine the plant's input.
+
+The angular input to the vehicle will then be
+
+\begin{align}
+  \delta = K_p \cdot e + K_d \cdot \dfrac{de}{dt} + K_i \cdot \int e dt
+\end{align}
