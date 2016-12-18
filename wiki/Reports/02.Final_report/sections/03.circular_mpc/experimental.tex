@@ -75,7 +75,7 @@ error of the vehicle with respect to its trajectory.
     \end{figure}
   \end{minipage}
 \end{minipage}
-}
+}\\
 
 The pairs of figures \ref{fig:circular_mpc_trajectory_transient}, \ref{fig:circular_mpc_error_transient}
 and \ref{fig:circular_mpc_trajectory_ss}, \ref{fig:circular_mpc_error_ss}
@@ -106,7 +106,7 @@ package could improve its performance.
     \end{figure}
   \end{minipage}
 \end{minipage}
-}
+}\\
 
 \noindent\makebox[\linewidth][c]{%
 \begin{minipage}{\linewidth}
@@ -125,6 +125,32 @@ package could improve its performance.
       \caption{The discrepancy in distance between the trajectory of the vehicle
         and the reference trajectory in steady state.}
       \label{fig:circular_mpc_error_ss}
+    \end{figure}
+  \end{minipage}
+\end{minipage}
+}\\
+
+
+Figures \ref{fig:circular_mpc_input_transient} and \ref{fig:circular_mpc_input_ss}
+show the result of the optimization process, that is, the steering angle
+applied to the front wheels of the vehicle during the transient and steady state
+respectively.
+
+\noindent\makebox[\linewidth][c]{%
+\begin{minipage}{\linewidth}
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/circular_mpc/input_transient.tex}}
+      \caption{Input through time during the transient phase.}
+      \label{fig:circular_mpc_input_transient}
+    \end{figure}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/circular_mpc/input_ss.tex}}
+      \caption{Input through time during steady state.}
+      \label{fig:circular_mpc_input_ss}
     \end{figure}
   \end{minipage}
 \end{minipage}
