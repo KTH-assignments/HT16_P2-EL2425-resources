@@ -1,0 +1,62 @@
+Here, we opted for the second solution, due to its simplicity and robustness
+in comparison to the first one. After tuning, the gains were determined as such:
+
+\begin{align*}
+  K_p &= 0.7 \\
+  K_d &= 0.1 \\
+  K_i &= 0.003 \\
+\end{align*}
+
+and $CC'$ was set to $CC' = 3.0$. Figures \ref{fig:centerline_pid_error_pos} and
+\ref{fig:centerline_pid_input_pos} illustrate the compound angular error
+and the input steering angle through time, when the initial orientation of the
+vehicle is positive. Figures \ref{fig:centerline_pid_error_neg} and
+\ref{fig:centerline_pid_input_neg} illustrate the compound angular error
+and the input steering angle through time, when the initial orientation of the
+vehicle is negative.
+
+
+
+\noindent\makebox[\linewidth][c]{%
+\begin{minipage}{\linewidth}
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/centerline_pid/error_pos.tex}}
+      \caption{The composite angular error. Initial orientation is positive.}
+      \label{fig:centerline_pid_error_pos}
+    \end{figure}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/centerline_pid/input_pos.tex}}
+      \caption{The input steering angle. Initial orientation is positive.}
+      \label{fig:centerline_pid_input_pos}
+    \end{figure}
+  \end{minipage}
+\end{minipage}
+}\\
+
+\noindent\makebox[\linewidth][c]{%
+\begin{minipage}{\linewidth}
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/centerline_pid/error_neg.tex}}
+      \caption{The composite angular error. Initial orientation is negative.}
+      \label{fig:centerline_pid_error_neg}
+    \end{figure}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/centerline_pid/input_neg.tex}}
+      \caption{The input steering angle. Initial orientation is negative.}
+      \label{fig:centerline_pid_input_neg}
+    \end{figure}
+  \end{minipage}
+\end{minipage}
+}\\
+
+The PID controller makes the vehicle quick in its reaction, and can
+successfully position it in the middle of the lane. However, it is
+susceptible to even minute disturbances.
