@@ -82,9 +82,22 @@ The pairs of figures \ref{fig:circular_mpc_trajectory_transient}, \ref{fig:circu
 and \ref{fig:circular_mpc_trajectory_ss}, \ref{fig:circular_mpc_error_ss}
 feature the breaking down of the entire sequence into the transient phase
 and the steady state. Notably, in steady state, in this configuration, the
-error in displacement never exceeds $3.5$ cm. Further tuning, and re-evaluation
+error in displacement never exceeds $3.5$ cm. Further tuning (namely of the
+eigenvalues of matrices $Q,R$ and the value of $H$), and re-evaluation
 of critical modules that deliver the composite functionality of this ROS
 package could improve its performance.
+
+Furthermore, we note that practical experience showed that the higher the ratio
+$Q_{\psi} / Q_{x,y}$, the closer the vehicle could travel to its intended
+trajectory. This is because the abiding by the reference orientation is a
+condition on abiding by the reference position of the car, since the latter
+is derived directly from the reference orienation minus $90$ degrees\footnote{
+see equations \ref{eq:circular_mpc_ref_x_from_theta_k} -
+\ref{eq:circular_mpc_ref_y_from_theta_k}. The reference orientation of the
+vehicle is implicitly $\psi_k^{ref} = \theta_k + 90^{\circ}$}, and there are
+no other means of influencing the position of the vehicle other than steering
+(the effect of $\beta_k$ rests solely on the steering angle $\delta_k$), since
+its velocity is kept constant.
 
 
 \noindent\makebox[\linewidth][c]{%
