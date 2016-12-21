@@ -1,15 +1,75 @@
-We are not able to adequately report on the performance of this functionality;
-we had successfully configured this module, but an undetermined failure
-seems to have occurred in the time between this and when we returned to
-record and log it. The vehicle might have suffered some mechanical
-mis-calibration due to crashes it has had in the meantime. However,
-this does not explain why it is able to follow the centerline with a
-PID controller, since they only difference between these two functionalities
-lies in code.
+%We are not able to adequately report on the performance of this functionality;
+%we had successfully configured this module, but an undetermined failure
+%seems to have occurred in the time between this and when we returned to
+%record and log it. The vehicle might have suffered some mechanical
+%mis-calibration due to crashes it has had in the meantime. However,
+%this does not explain why it is able to follow the centerline with a
+%PID controller, since they only difference between these two functionalities
+%lies in code.
 
-As evidence of the successful completion of this task, we can exhibit a
-video which illustrates the performance of our approach prior to this failure.
+%As evidence of the successful completion of this task, we can exhibit a
+%video which illustrates the performance of our approach prior to this failure.
 
-\begin{center}
-  \url{https://www.youtube.com/watch?v=w3Wnw5SLmss}
-\end{center}
+%\begin{center}
+  %\url{https://www.youtube.com/watch?v=w3Wnw5SLmss}
+%\end{center}
+
+We tested the performance of this functionality in the corridor that
+connects the buildings addressed as Osquldas vag 10 and 6.
+
+The velocity of the vehicle was again kept at its minimum. The vehicle was
+positioned approximately one meter away from the centerline at the side
+of the negative $y$ axis. Its initial orientation with respect to the
+orientation of the centerline was $-65^{\circ}$, meaning that it begun
+facing the right-hand side wall.
+
+With penalty matrices
+
+\begin{equation}
+  Q =
+  \begin{bmatrix}
+    1000 & 0    \\
+      0  & 1200 \\
+  \end{bmatrix}, R = 10000
+\end{equation}
+
+and a horizon length of $N=10$, we plot the two main states of significance in
+figures \ref{fig:centerline_mpc_y} and \ref{fig:centerline_mpc_psi}:
+the displacement of the vehicle from the centerline and its orientation with
+respect to the orientation of the corridor itself.
+Figure \ref{fig:centerline_mpc_input} shows the steering angle that was given
+as input to the front wheels.
+
+
+\noindent\makebox[\linewidth][c]{%
+\begin{minipage}{\linewidth}
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/centerline_mpc/y.tex}}
+      \caption{The displacement of the vehicle from the centerline in meters
+        through time.}
+      \label{fig:centerline_mpc_y}
+    \end{figure}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[H]
+      \scalebox{0.6}{\input{./figures/results/centerline_mpc/psi.tex}}
+      \caption{The orientation of the vehicle with respect to the orientation
+        of the centerline through time.}
+      \label{fig:centerline_mpc_psi}
+    \end{figure}
+  \end{minipage}
+\end{minipage}
+}\\
+
+
+\begin{figure}[H]\centering
+  \scalebox{0.6}{\input{./figures/results/centerline_mpc/input.tex}}
+  \caption{The steering angle given to the front wheels.}
+  \label{fig:centerline_mpc_input}
+\end{figure}
+
+The vehicle succeeded in positioning itself in the centerline of the corridor.
+The displacement error is eliminated entirely by the end of the corridor,
+and the same applies for the vehicle's orientation.

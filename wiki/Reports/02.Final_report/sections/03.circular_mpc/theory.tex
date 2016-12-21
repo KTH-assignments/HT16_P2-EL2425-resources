@@ -27,8 +27,11 @@ identify the point $T$ of the circle that lies on the line that is tangent to
 the circle and that passes through the position of the vehicle. When this
 point is known, the sequence of $N-1$ reference poses can be calculated,
 given knowledge of the circle's radius and the vehicle's velocity. $N$ is the
-horizon length. The following two sections illustrate the procedures by
-which the $N$ reference poses are identified.
+horizon length. In the case where the vehicle is in the interior of the circle,
+no tangent is defined; point $T$ is then identified as the point that lies on
+the circle and whose distance from the vehicle is minimum. The following two
+sections illustrate the procedures by which the $N$ reference poses are
+identified.
 
 \subsubsection{Finding $T$}
 
