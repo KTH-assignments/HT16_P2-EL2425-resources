@@ -141,17 +141,32 @@ hence $\lambda = \dfrac{\pi}{2} - \phi$. Then, we conclude that
 \subsubsection{Obtaining the linearized kinematic model}
 
 The model constitutes the equations of motion of the vehicle, and has four
-states ($x$, $y$, $v$ and $\psi$) and two inputs ($v_i$ and $\delta$). The
-equations of the vehicle's motion that are relevant here are
+states ($x$, $y$, $v$ and $\psi$), two inputs ($v_i$ and $\delta$) and the
+time constant $\tau$. The equations of the vehicle's motion that are relevant here are
 
 \begin{align}
-  \dot{x} &= v cos(\psi + \beta) \\
-  \dot{y} &= v sin(\psi + \beta) \\
-  \dot{v} &= \dfrac{v_i - v}{\tau} \\
-  \dot{\psi} &= \dfrac{v}{l_r} sin\beta
+  \dot{x} &= v cos(\psi + \beta) \label{eq:cont_x}\\
+  \dot{y} &= v sin(\psi + \beta) \label{eq:cont_y}\\
+  \dot{v} &= \dfrac{v_i - v}{\tau} \label{eq:cont_v}\\
+  \dot{\psi} &= \dfrac{v}{l_r} sin\beta \label{eq:cont_psi}
 \end{align}
 
-Sampling with a sampling time of $T_s$ gives
+For determining the value of $\tau$, with assumption that the car's dynamic is a 1st-order system, we drive the car in straight line along the Y axis(global) as far as possible with speed of $14\%,16\%,18\%$ and $20\%$ respectively. It is hard to reach the static situation since the space is limited, that is, the data only describe the beginning part of the step response. One way to solve the problem is using the Identification Toolbox in Matlab, which is capable of constructing mathematical models of dynamic systems from measured input-output data.
+
+Through the identifications of experiments at 4 different velocity, the time constant can be caught by average
+\begin{align}
+    \tau = 1.01222s
+\end{align}
+
+And the maximum velocity of the car is
+\begin{align}
+    V_{max} = 13.56m/s
+\end{align}
+
+
+
+Regarding equations \ref{eq:cont_x}-\ref{eq:cont_psi}, sampling with a sampling
+time of $T_s$ gives
 
 \begin{align}
   x_{k+1} &= x_{k} + T_s v_k cos(\psi_k + \beta_k) \\
